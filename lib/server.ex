@@ -28,20 +28,24 @@ defmodule Server do
         
         tweets = []
         if(is_user_online(username) == true) do
+            IO.puts "getting tweets for ::" <> username
            {:tweets,tweets} = GenServer.call(String.to_atom(username), {:get_tweets,{:print_message,"Keyur"}}) 
         else 
+            IO.puts Map.get(users, username)
             tweets = Map.get(Map.get(users, username),"tweets")
         end
+        IO.inspect tweets
         tweets
     end
 
     def merge_tweets(followings,tweets,idx,users) do
 
-        if(length(followings) == idx) do
+        if(length(followings) == 0) do
             tweets
         else
-            user = Enum.at(followings, idx)
-            user_tweets = get_user_tweets(followings,users) 
+           
+            [user | followings] = followings
+            user_tweets = get_user_tweets(user,users) 
             merge_tweets(followings, Enum.concat(tweets,user_tweets), idx+1, users)
 
         end       
@@ -65,7 +69,11 @@ defmodule Server do
 
     def is_user_online(username) do
         is_online = false
-        pid = Process.whereis(String.to_atom(username))        
+        IO.puts username
+        pid = Process.whereis(String.to_atom(username))   
+        IO.inspect username <> " is  :: "
+        IO.inspect pid   
+        IO.inspect Process.alive?(pid)  
         if(pid != nil && Process.alive?(pid) == true) do
             is_online = true
         end
@@ -95,7 +103,7 @@ defmodule Server do
     #dump user state on server
     def handle_call({:update_user_state ,user},_from,state) do       
         users = Map.get(state, "users")
-        users = Map.put(users,Map.get(elem(user,1),"username"),user)
+        users = Map.put(users,Map.get(elem(user,1),"username"),elem(user,1))
         state = Map.put(state,"users",users)
         
         {:reply,state,state}
@@ -140,7 +148,7 @@ defmodule Server do
         password = elem(user_info,1)
         retVal = false
         user = Map.get(Map.get(state,"users"),username)
-       
+       IO.inspect user
         #authenticate user
         if(user != nil && Map.get(user,"password") == password) do
             retVal = true

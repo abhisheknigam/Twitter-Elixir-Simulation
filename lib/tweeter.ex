@@ -50,11 +50,17 @@ defmodule Tweeter do
 
         IO.puts "------------------server state---------------------"
 
-        IO.inspect get_server_state
+        
 
 
         logout_user("keyur")
         logout_user("abhi")
+
+        :timer.sleep(2000)
+
+        login_user("keyur","baldha")
+        
+        IO.inspect get_server_state
 
         IO.gets ""
     end
