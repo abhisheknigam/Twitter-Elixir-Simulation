@@ -78,6 +78,7 @@ defmodule Client do
     def upsert_user_dashboard(userState, tweet) do
         dashboard = Map.get(userState, "dashboard")
         dashboard = [tweet|dashboard]
+        userState = userState.put(userState, "dashboard", dashboard)
     end
 
     def process_hashtags(word, tweet) do
@@ -92,12 +93,13 @@ defmodule Client do
         end
     end
 
-    def parse_tweet(finaltweet) do
+    def parse_tweet(finalTweet) do
         tweet = elem(finalTweet, 0)
         split_tweet = String.split(tweet);
         Enum.each(split_tweet, fn(word) -> 
             process_hashtags(word, tweet)
             process_mentions(word, tweet)
+        end
         )
     end
 
@@ -110,7 +112,7 @@ defmodule Client do
         username = Map.get(userState,"username");
         GenServer.call(String.to_atom("mainserver"), {:update_user_state, {username,userState}})
         Genserver.stop(String.to_atom(username))
-        {:reply, {:ok}, userState}
+        {:reply, true, userState}
     end
 
     def handle_call({:add_tweet ,new_message}, _from, userState) do
@@ -131,7 +133,7 @@ defmodule Client do
         {:reply,follower,userState}
     end
 
-    def handle_call({:get_tweets ,new_message}, _from, state) do
+    def handle_call({:get_tweets ,new_message}, _from, userState) do
         if userState != nil do
             tweets = Map.get(userState, "tweets")
         end

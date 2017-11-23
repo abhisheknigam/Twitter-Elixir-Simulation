@@ -39,9 +39,10 @@ defmodule MainModule do
         user = GenServer.call(String.to_atom("mainserver"),{:get_user_state,username}) 
         user
     end
+    
     def logout_user(username)  do
-        retval = GenServer.call(String.to_atom("mainserver"),{:logout,{username}}) 
-        if(retVal == true) do 
+        retVal = GenServer.call(String.to_atom("mainserver"),{:logout,{username}}) 
+        if retVal == true do
             IO.inspect "" <> username <>" logout successful"
         else
             IO.inspect "" <> username <>" login unsuccessful"
@@ -49,7 +50,7 @@ defmodule MainModule do
     end
 
     def login_user(username,password)  do
-        retval = GenServer.call(String.to_atom("mainserver"), {:login,{username,password}}) 
+        retVal = GenServer.call(String.to_atom("mainserver"), {:login,{username,password}}) 
         if(retVal == true) do 
             IO.inspect "" <> username <>" login successful"
             IO.inspect get_user_state(username)
@@ -59,7 +60,7 @@ defmodule MainModule do
     end
 
     def register_user(username,password) do
-        retval = GenServer.call(String.to_atom("mainserver"),{:register_user,{username,password}}) 
+        retVal = GenServer.call(String.to_atom("mainserver"),{:register_user,{username,password}}) 
         if(retVal == true) do 
             IO.inspect "" <> username <>" registration successful"
         else

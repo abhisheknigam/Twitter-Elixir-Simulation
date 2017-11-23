@@ -8,7 +8,7 @@ defmodule Server do
 
     
     def initialize_new_user(username, passwd) do
-        %{"username" => username, "password" => passwd, "tweets" => [], "followers"=>[],"followings"=>[] }
+        %{"username" => username, "password" => passwd, "tweets" => [], "followers"=>[],"followings"=>[], "dashbord"=>[] }
     end
 
     def register_user(users,username, passwd) do
@@ -55,6 +55,7 @@ defmodule Server do
 
 
     def upsert_user_following(userState, username, following) do
+        followings = Map.get(userState,"followings")
         if userState != nil do            
             followings = [following | followings]
             userState = Map.put(userState, "followings", followings)
@@ -74,7 +75,7 @@ defmodule Server do
    
     # handle call_backs
 
-    #regiwster user
+    #register user
     def handle_call({:register_user ,new_user_info},_from,state) do  
         
         #new_user_info -> {username,password}
@@ -144,7 +145,7 @@ defmodule Server do
         #authenticate user
         if(user!= nil && Map.get(user,"password") == password) do
             retVal = true
-            dashboard = build_dashboard()
+            dashboard = build_dashboard(user, Map.get(state,"users"))
             user = Map.put(user,"dashboard",dashboard)
             GenServer.start_link(Client, user, name: String.to_atom(username))
         else
@@ -156,7 +157,7 @@ defmodule Server do
 
     def handle_call({:logout,username},_from, state) do
         username = elem(username,0)
-        if(is_user_online(username) != null) do
+        if(is_user_online(username) != nil) do
             retVal = GenServer.call(String.to_atom(username),{:go_offline, {:print_message,"Keyur"}}) 
         end
         {:reply,retVal,state}

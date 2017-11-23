@@ -6,6 +6,7 @@ defmodule Tweeter.Mixfile do
       app: :tweeter,
       version: "0.1.0",
       elixir: "~> 1.5",
+      escript: [main_module: MainModule],
       start_permanent: Mix.env == :prod,
       deps: deps()
     ]
