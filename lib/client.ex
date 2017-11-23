@@ -6,22 +6,25 @@ defmodule Client do
     end 
 
     def add_to_follower_dashboards(finalTweet, followings) do
-        [following | followings] = followings
-        GenServer.call(String.to_atom(following), {:add_to_dashboard, {finalTweet}})
-        add_to_follower_dashboards(finalTweet, followings) 
+        if length(followings) > 0 do
+            [following | followings] = followings
+            GenServer.call(String.to_atom(following), {:add_to_dashboard, {finalTweet}})
+            add_to_follower_dashboards(finalTweet, followings) 
+        end
     end
 
     def upsert_user_tweet(userState, tweet) do
         username = Map.get(userState, "username")
         if userState != nil do
             tweets = Map.get(userState, "tweets")
-            if tweets != nil do
+            if tweets != nil && length(tweets) > 0 do
                 [lastTweet|allOthers] = tweets
                 lastTweetId = elem(lastTweet,1)
                 finalTweet = {tweet, Integer.parse(lastTweetId)+1, :calendar.universal_time(), username}
                 tweets = [finalTweet | tweets]
             else
-                tweets = [{tweet,0,:calendar.universal_time()}]
+                finalTweet = {tweet,0,:calendar.universal_time(), username}
+                tweets = [finalTweet]
             end
 
             #Parse Tweet for Hashtag and Mentions
@@ -118,7 +121,7 @@ defmodule Client do
     def handle_call({:add_tweet ,new_message}, _from, userState) do
         tweet = elem(new_message,0)
         {tweet, userState} = upsert_user_tweet(userState, tweet)
-        {:reply, tweet, userState}
+        {:reply,{:tweet,tweet}, userState}
     end
 
     def handle_call({:add_to_following_alive ,new_message}, _from, userState) do
