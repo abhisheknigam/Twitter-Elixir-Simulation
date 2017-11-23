@@ -10,7 +10,6 @@ defmodule Server do
 
     def initialize_state() do
         state = {}
-
     end
 
     def initialize_new_user(username, passwd) do
@@ -34,7 +33,7 @@ defmodule Server do
         
         tweets = []
         if(is_user_online(username) == true) do
-           {:tweets,tweets} = GenServer.call({:get_tweets,String.to_atom(username)},{:print_message,"Keyur"},) 
+           {:tweets,tweets} = GenServer.call({:get_tweets,String.to_atom(username)},{:print_message,"Keyur"}) 
         else 
             tweets = Map.get(Map.get(users, username),"tweets")
         end
@@ -48,7 +47,8 @@ defmodule Server do
         else
             user = Enum.at(followings, idx)
             user_tweets = get_user_tweets(followings,users) 
-            merge_tweets(followings, Enum.concat(tweets,user_tweets),idx+1,users)
+            merge_tweets(followings, Enum.concat(tweets,user_tweets), idx+1, users)
+
         end       
     end
 
@@ -128,16 +128,18 @@ defmodule Server do
         #users = Map.put(users,username, user)       
         #state = Map.put(state,"users", users)
         is_online = is_user_online(username)
+        tweet = {}
         if(is_online == true) do
             {:tweet,tweet} = GenServer.call({:add_tweet,String.to_atom(username)},{tweet_text})
 
         end
 
-        {:reply,user,state}
+        {:reply,tweet,state}
     end
     
+
     #user_info - > 0 : username, 1: pwd
-    def handle_call({:go_online,user_info}, _from, state) do
+    def handle_call({:login,user_info}, _from, state) do
         username = elem(user_info,0)
         password = elem(user_info,1)
         retVal = false
@@ -153,6 +155,12 @@ defmodule Server do
         end 
 
         {:reply,retVal,state}
+    end
+
+    def handle_call({:logout,username},_from, state) do
+        if(is_user_online(username) != null) do
+            GenServer.call({:go_offline,String.to_atom(username)},{:print_message,"Keyur"}) 
+        end
     end
 
     def handle_call({:add_to_following_dead ,new_message},_from,state) do
