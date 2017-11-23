@@ -97,14 +97,14 @@ defmodule Client do
         {:reply, {:ok}, userState}
     end
 
-    def handle_cast({:go_offline ,new_message}, userState) do
+    def handle_call({:go_offline ,new_message},_from, userState) do
         username = Map.get(userState,"username");
         IO.inspect "-------------------------------------------------------------------------"
         userState = GenServer.call(String.to_atom("mainserver"), {:update_user_state, {username,userState}})
         #{:stop, :normal, userState}
-        terminate(:normal, userState)
+        #terminate(:normal, userState)
         #{:reply, true, userState}
-        {:noreply, userState}
+        {:stop, :normal, status}
     end
 
     def handle_call({:add_tweet ,new_message}, _from, userState) do

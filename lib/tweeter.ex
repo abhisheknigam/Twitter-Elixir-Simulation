@@ -83,7 +83,7 @@ defmodule Tweeter do
     end
     
     def logout_user(username)  do
-        GenServer.cast(String.to_atom(username),{:go_offline,{username}}) 
+        GenServer.call(String.to_atom(username),{:go_offline,{username}}) 
         retVal = true
         IO.inspect "" <> username <>" logout successful"
     end
