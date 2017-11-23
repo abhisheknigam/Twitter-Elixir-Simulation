@@ -25,9 +25,6 @@ defmodule Tweeter do
         login_user("Karan","Karan")
 
 
-        
-
-
         add_follower("abhi","keyur")
         add_follower("apurv","keyur")
         add_follower("Karan","keyur")
@@ -52,11 +49,6 @@ defmodule Tweeter do
         IO.inspect get_user_state("abhi")
         #IO.inspect get_user_state("apurv")
         #IO.inspect get_user_state("Karan")
-        
-
-       
-
-        
 
 
         logout_user("keyur")
@@ -124,6 +116,7 @@ defmodule Tweeter do
             create_users(number-1,userlist)
         end
     end
+    
     def random_username(length) do
         :crypto.strong_rand_bytes(length) |> Base.url_encode64 |> binary_part(0, length)
       end
