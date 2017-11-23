@@ -68,14 +68,17 @@ defmodule Client do
     end
 
     def process_hashtags(word, tweet) do
-        if String.first(word)=="#" do
-            GenServer.call(String.to_atom("mainserver"), {:add_hashtag, {word,tweet}})
+        if String.first(word)=="#" do           
+            hashtag =  String.slice(word,1,String.length(word))
+            IO.puts"put hashhhhhhhh"
+            GenServer.call(String.to_atom("mainserver"), {:add_hashtag, {hashtag,tweet}})
         end 
     end
 
     def process_mentions(word, tweet) do
         if String.first(word) == "@" do
-            GenServer.call(String.to_atom("mainserver"), {:add_mentions, {word,tweet}})
+            username =  String.slice(word,1,String.length(word))
+            GenServer.call(String.to_atom("mainserver"), {:add_mentions, {username,tweet}})
         end
     end
 
@@ -83,8 +86,8 @@ defmodule Client do
         tweet = elem(finalTweet, 0)
         split_tweet = String.split(tweet);
         Enum.each(split_tweet, fn(word) -> 
-            process_hashtags(word, tweet)
-            process_mentions(word, tweet)
+            process_hashtags(word, finalTweet)
+            process_mentions(word, finalTweet)
         end
         )
     end
