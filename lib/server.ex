@@ -31,7 +31,6 @@ defmodule Server do
             IO.puts "getting tweets for ::" <> username
            {:tweets,tweets} = GenServer.call(String.to_atom(username), {:get_tweets,{:print_message,"Keyur"}}) 
         else 
-            IO.puts Map.get(users, username)
             tweets = Map.get(Map.get(users, username),"tweets")
         end
         IO.inspect tweets
