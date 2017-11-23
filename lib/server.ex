@@ -178,8 +178,12 @@ defmodule Server do
         {:reply,state,state}
     end
 
-    def handle_call({:add_hashtag , hashtag, tweet}, _from, state) do
-        
+    def handle_call({:add_hashtag , hash_info}, _from, state) do
+        IO.puts("add tagsss")
+        hashtag = elem(hash_info,0)
+        tweet = elem(hash_info,1)
+        #{hashtag, tweet}
+        IO.puts "adddd   hash tags " <> hashtag 
         hashtag_map = Map.get(state,"hashtags")
         if(Map.get(hashtag_map,hashtag) == nil) do
             hashtag_map = Map.put(hashtag_map,hashtag,[])
@@ -191,7 +195,7 @@ defmodule Server do
         {:reply,state,state}
     end
 
-    def handle_call({:add_mentions , mentions, tweet}, _from, state) do
+    def handle_call({:add_mentions , {mentions, tweet}}, _from, state) do
         
         mentions_map = Map.get(state,"mentions")
         users = Map.get(state,"users")

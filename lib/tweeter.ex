@@ -38,15 +38,19 @@ defmodule Tweeter do
         post_tweet("keyur","helooo")
         post_tweet("keyur","jijijiij")
 
-        post_tweet("apurv","I am IBM Watson")
+        post_tweet("apurv","I am IBM #Watson @keyu")
         post_tweet("Karan","I am Anita's Lover")
-        post_tweet("abhi","This is from abhi")
+        post_tweet("abhi","#This is from abhi")
 
 
 
         IO.inspect get_user_state("apurv")
         IO.inspect get_user_state("Karan")
         
+
+        IO.puts "------------------server state---------------------"
+
+        IO.inspect get_server_state
 
 
         #logout_user("keyur")
@@ -55,8 +59,8 @@ defmodule Tweeter do
 
     def post_tweet(username, tweet_text) do
         
-        tweet = GenServer.call(String.to_atom("mainserver"), {:post_tweet,{username,tweet_text}}) 
-        
+        #tweet = GenServer.call(String.to_atom("mainserver"), {:post_tweet,{username,tweet_text}}) 
+        {:tweet,tweet} = GenServer.call(String.to_atom(username),{:add_tweet,{tweet_text}})
         IO.inspect tweet
           
     end
