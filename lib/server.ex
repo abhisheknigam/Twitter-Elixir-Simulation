@@ -93,11 +93,9 @@ defmodule Server do
     end
 
     #dump user state on server
-    def handle_call({:update_user_state ,user},_from,state) do  
-        
+    def handle_call({:update_user_state ,user},_from,state) do       
         users = Map.get(state, "users")
-
-        users = Map.put(users,Map.get(user,"username"),user)
+        users = Map.put(users,Map.get(elem(user,1),"username"),user)
         state = Map.put(state,"users",users)
         
         {:reply,state,state}

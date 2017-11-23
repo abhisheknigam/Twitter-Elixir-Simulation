@@ -49,8 +49,10 @@ defmodule Tweeter do
         
 
 
-        #logout_user("keyur")
-        #logout_user("abhi")
+        logout_user("keyur")
+        logout_user("abhi")
+
+        IO.gets ""
     end
 
     def post_tweet(username, tweet_text) do
@@ -77,12 +79,9 @@ defmodule Tweeter do
     end
     
     def logout_user(username)  do
-        retVal = GenServer.call(String.to_atom("mainserver"),{:logout,{username}}) 
-        if retVal == true do
-            IO.inspect "" <> username <>" logout successful"
-        else
-            IO.inspect "" <> username <>" login unsuccessful"
-        end    
+        GenServer.cast(String.to_atom(username),{:go_offline,{username}}) 
+        retVal = true
+        IO.inspect "" <> username <>" logout successful"
     end
 
     def login_user(username,password)  do

@@ -94,11 +94,14 @@ defmodule Client do
         {:reply, {:ok}, userState}
     end
 
-    def handle_call({:go_offline ,new_message}, _from, userState) do
+    def handle_cast({:go_offline ,new_message}, userState) do
         username = Map.get(userState,"username");
-        GenServer.call(String.to_atom("mainserver"), {:update_user_state, {username,userState}})
-        Genserver.stop(String.to_atom(username),:shutdown, 5000)
-        {:reply, true, userState}
+        IO.inspect "-------------------------------------------------------------------------"
+        userState = GenServer.call(String.to_atom("mainserver"), {:update_user_state, {username,userState}})
+        #{:stop, :normal, userState}
+        terminate(:normal, userState)
+        #{:reply, true, userState}
+        {:noreply, userState}
     end
 
     def handle_call({:add_tweet ,new_message}, _from, userState) do
@@ -146,6 +149,11 @@ defmodule Client do
     def handle_call({:get_user_state ,new_message}, _from, userState) do
         {:reply, userState, userState}
     end
+
+    def terminate(reason, state) do
+        IO.puts "Going Down: #{inspect(state)}"
+        :normal
+      end
 
 end
 
