@@ -35,7 +35,7 @@ defmodule Client do
             add_to_follower_dashboards(finalTweet, followings)
             
             #Add tweet to user state
-            userState = Map.put(userState, "tweets", tweet)
+            userState = Map.put(userState, "tweets", tweets)
         end
         {finalTweet, userState}
     end
