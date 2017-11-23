@@ -14,7 +14,7 @@ defmodule Server do
     end
 
     def initialize_new_user(username, passwd) do
-        {"username" => username, "password" => passwd, "tweets" => [], "followers"=>[],"followings"=>[] }
+        %{"username" => username, "password" => passwd, "tweets" => [], "followers"=>[],"followings"=>[] }
     end
 
     def register_user(users,username, passwd) do
@@ -32,9 +32,8 @@ defmodule Server do
 
     def get_user_tweets(username,users) do
         
-        pid = Process.whereis(String.to_atom(username))
         tweets = []
-        if(pid != nil && Process.alive?(pid) == true) do
+        if(is_user_online(username) == true) do
            {:tweets,tweets} = GenServer.call({:get_tweets,String.to_atom(username)},{:print_message,"Keyur"},) 
         else 
             tweets = Map.get(Map.get(users, username),"tweets")
@@ -56,10 +55,28 @@ defmodule Server do
     def build_dashboard(user,users) do
         followings = Map.get(user,"followings")              
         dashboard = merge_tweets(followings,[],0,users)
+        dashboard
     end
 
 
+    def upsert_user_following(userState, username, following) do
+        if userState != nil do            
+            followings = [following | followings]
+            userState = Map.put(userState, "followings", followings)
+        end
+        userState
+    end
 
+    def is_user_online(username) do
+        is_online = false
+        pid = Process.whereis(String.to_atom(username))        
+        if(pid != nil && Process.alive?(pid) == true) do
+            is_online = true
+        end
+        is_online
+    end
+
+   
     # handle call_backs
 
     #regiwster user
@@ -102,14 +119,20 @@ defmodule Server do
 
     #add tweet to user list
     #0 -> text, 1-> id, 2 -> timestamp, 3 -> username
-    def handle_call({:add_tweet ,tweet}, _from, state) do  
+    def handle_call({:post_tweet ,username, tweet_text}, _from, state) do  
         #tweet_data -> {}
-        username = elem(tweet, 3)
-        users = Map.get(state, "users")
-        user = Map.get(users, username)
-        user = add_tweet(user,tweet)
-        users = Map.put(users,username, user)       
-        state = Map.put(state,"users", users)
+        #username = elem(tweet, 3)
+        #users = Map.get(state, "users")
+        #user = Map.get(users, username)
+        #user = add_tweet(user,tweet)
+        #users = Map.put(users,username, user)       
+        #state = Map.put(state,"users", users)
+        is_online = is_user_online(username)
+        if(is_online == true) do
+            {:tweet,tweet} = GenServer.call({:add_tweet,String.to_atom(username)},{tweet_text})
+
+        end
+
         {:reply,user,state}
     end
     
@@ -132,6 +155,49 @@ defmodule Server do
         {:reply,retVal,state}
     end
 
+    def handle_call({:add_to_following_dead ,new_message},_from,state) do
+        username = elem(new_message,0)
+        follower = elem(new_message,1)
+    
+        userState = Map.get(Map.get(state,"users"),username)
+        userState = upsert_user_following(userState, username, follower)
+        users = Map.get(state,"users")
+        users = Map.put(users,username,userState)
+        state = Map.put(state, "users", users)
+        {:reply,state,state}
+    end
+
+    def handle_call({:add_hashtag , hashtag, tweet}, _from, state) do
+        
+        hashtag_map = Map.get(state,"hashtags")
+        if(Map.get(hashtag_map,hashtag) == nil) do
+            hashtag_map = Map.put(hashtag_map,hashtag,[])
+        end
+        tweets = Map.get(hashtag_map,hashtag)
+        tweets = [tweet| tweets]
+        hashtag_map = Map.put(hashtag_map,hashtag,tweets)
+        state = Map.put(state,"hashtags", hashtag_map)
+        {:reply,state,state}
+    end
+
+    def handle_call({:add_mentions , mentions, tweet}, _from, state) do
+        
+        mentions_map = Map.get(state,"mentions")
+        users = Map.get(state,"users")
+        if(Map.get(users,mentions) != nil) do
+            if(Map.get(mentions_map,mentions) == nil) do
+                mentions_map = Map.put(mentions_map,mentions,[])
+            end
+
+            tweets = Map.get(mentions_map,mentions)
+            tweets = [tweet| tweets]
+            mentions_map = Map.put(mentions_map,mentions,tweets)
+            state = Map.put(state,"mentions", mentions_map)
+        end
+        {:reply,state,state}
+    end
+
+    
     def handle_call({:get_state ,new_message},_from,state) do  
         {:reply,state,state}
     end
