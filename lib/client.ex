@@ -54,3 +54,5 @@ defmodule Client do
     end
 
 end
+
+#{:news,size} = GenServer.call({:bit_coin,String.to_atom(server_name)},{:print_message,"Keyur"}, :infinity)    

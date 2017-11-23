@@ -14,7 +14,7 @@ defmodule Server do
     end
 
     def initialize_new_user(username, passwd) do
-        {"username" => username, "password" => passwd, "tweets" => [], "follwers"=>[],"follwings"=>[] }
+        {"username" => username, "password" => passwd, "tweets" => [], "followers"=>[],"followings"=>[] }
     end
 
     def register_user(users,username, passwd) do
@@ -23,10 +23,46 @@ defmodule Server do
         users
     end
     
-    def handle_call({:get_state ,new_message},_from,state) do  
-        {:reply,state,state}
+    def add_tweet(user,tweet) do
+        tweets = Map.get(user,"tweets")
+        tweets = [ tweet | tweets]
+        user = Map.put(user,"tweets",tweets)
+        user
     end
 
+    def get_user_tweets(username,users) do
+        
+        pid = Process.whereis(String.to_atom(username))
+        tweets = []
+        if(pid != nil && Process.alive?(pid) == true) do
+           {:tweets,tweets} = GenServer.call({:get_tweets,String.to_atom(username)},{:print_message,"Keyur"},) 
+        else 
+            tweets = Map.get(Map.get(users, username),"tweets")
+        end
+        tweets
+    end
+
+    def merge_tweets(followings,tweets,idx,users) do
+
+        if(length(followings) == idx) do
+            tweets
+        else
+            user = Enum.at(followings, idx)
+            user_tweets = get_user_tweets(followings,users) 
+            merge_tweets(followings, Enum.concat(tweets,user_tweets),idx+1,users)
+        end       
+    end
+
+    def build_dashboard(user,users) do
+        followings = Map.get(user,"followings")              
+        dashboard = merge_tweets(followings,[],0,users)
+    end
+
+
+
+    # handle call_backs
+
+    #regiwster user
     def handle_call({:register_user ,new_user_info},_from,state) do  
         
         #new_user_info -> {username,password}
@@ -63,7 +99,45 @@ defmodule Server do
         
         {:reply,user,state}
     end
+
+    #add tweet to user list
+    #0 -> text, 1-> id, 2 -> timestamp, 3 -> username
+    def handle_call({:add_tweet ,tweet}, _from, state) do  
+        #tweet_data -> {}
+        username = elem(tweet, 3)
+        users = Map.get(state, "users")
+        user = Map.get(users, username)
+        user = add_tweet(user,tweet)
+        users = Map.put(users,username, user)       
+        state = Map.put(state,"users", users)
+        {:reply,user,state}
+    end
     
-    #call_backs
+    #user_info - > 0 : username, 1: pwd
+    def handle_call({:go_online,user_info}, _from, state) do
+        username = elem(user_info,0)
+        password = elem(user_info,1)
+        retVal = false
+        user = Map.get(Map.get(state,"users"),username)
+        #authenticate user
+        if(user!= nil && Map.get(user,"password") == password) do
+            retVal = true
+            dashboard = build_dashboard()
+            user = Map.put(user,"dashboard",dashboard)
+            GenServer.start_link(Client, user, name: String.to_atom(username))
+        else
+            retVal = false
+        end 
+
+        {:reply,retVal,state}
+    end
+
+    def handle_call({:get_state ,new_message},_from,state) do  
+        {:reply,state,state}
+    end
+    
 
 end
+
+#{:news,size} = GenServer.call({:bit_coin,String.to_atom(server_name)},{:print_message,"Keyur"}, :infinity)    
+# {:ok, bucket} = GenServer.start_link(__MODULE__, [args], name: String.to_atom(node_name))
