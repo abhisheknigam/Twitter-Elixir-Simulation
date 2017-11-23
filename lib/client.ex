@@ -73,7 +73,7 @@ defmodule Client do
 
     def process_mentions(word, tweet) do
         if String.first(word) == "@" do
-            GenServer.call(String.to_atom("mainserver"), {:add_mentions, {word,tweet})
+            GenServer.call(String.to_atom("mainserver"), {:add_mentions, {word,tweet}})
         end
     end
 

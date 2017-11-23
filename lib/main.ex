@@ -24,23 +24,23 @@ defmodule MainModule do
 
     def post_tweet(username, tweet_text) do
         
-        tweet = GenServer.call({:post_tweet,String.to_atom("mainserver")},{username,tweet_text}) 
+        tweet = GenServer.call(String.to_atom("mainserver"), {:post_tweet,{username,tweet_text}}) 
         
         IO.inspect tweet
           
     end
 
     def get_server_state() do
-        state = GenServer.call({:get_state,String.to_atom("mainserver")},{}) 
+        state = GenServer.call(String.to_atom("mainserver"),{:get_state,{}}) 
         state
     end
 
     def get_user_state(username) do
-        user = GenServer.call({:get_user_state,String.to_atom("mainserver")},username) 
+        user = GenServer.call(String.to_atom("mainserver"),{:get_user_state,username}) 
         user
     end
     def logout_user(username)  do
-        retval = GenServer.call({:logout,String.to_atom("mainserver")},{username}) 
+        retval = GenServer.call(String.to_atom("mainserver"),{:logout,{username}}) 
         if(retVal == true) do 
             IO.inspect "" <> username <>" logout successful"
         else
@@ -49,7 +49,7 @@ defmodule MainModule do
     end
 
     def login_user(username,password)  do
-        retval = GenServer.call({:login,String.to_atom("mainserver")},{username,password}) 
+        retval = GenServer.call(String.to_atom("mainserver"), {:login,{username,password}}) 
         if(retVal == true) do 
             IO.inspect "" <> username <>" login successful"
             IO.inspect get_user_state(username)
@@ -59,7 +59,7 @@ defmodule MainModule do
     end
 
     def register_user(username,password) do
-        retval = GenServer.call({:register_user,String.to_atom("mainserver")},{username,password}) 
+        retval = GenServer.call(String.to_atom("mainserver"),{:register_user,{username,password}}) 
         if(retVal == true) do 
             IO.inspect "" <> username <>" registration successful"
         else

@@ -28,7 +28,7 @@ defmodule Server do
         
         tweets = []
         if(is_user_online(username) == true) do
-           {:tweets,tweets} = GenServer.call({:get_tweets,String.to_atom(username)},{:print_message,"Keyur"}) 
+           {:tweets,tweets} = GenServer.call(String.to_atom(username), {:get_tweets,{:print_message,"Keyur"}}) 
         else 
             tweets = Map.get(Map.get(users, username),"tweets")
         end
@@ -127,7 +127,7 @@ defmodule Server do
         is_online = is_user_online(username)
         tweet = {}
         if(is_online == true) do
-            {:tweet,tweet} = GenServer.call({:add_tweet,String.to_atom(username)},{tweet_text})
+            {:tweet,tweet} = GenServer.call(String.to_atom(username),{:add_tweet,{tweet_text}})
 
         end
 
@@ -157,7 +157,7 @@ defmodule Server do
     def handle_call({:logout,username},_from, state) do
         username = elem(username,0)
         if(is_user_online(username) != null) do
-            retVal = GenServer.call({:go_offline, String.to_atom(username)}, {:print_message,"Keyur"}) 
+            retVal = GenServer.call(String.to_atom(username),{:go_offline, {:print_message,"Keyur"}}) 
         end
         {:reply,retVal,state}
     end
