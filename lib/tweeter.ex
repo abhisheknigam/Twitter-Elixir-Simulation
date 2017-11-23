@@ -29,9 +29,6 @@ defmodule Tweeter do
         login_user("Karan","Karan")
 
 
-        
-
-
         add_follower("abhi","keyur")
         add_follower("apurv","keyur")
         add_follower("Karan","keyur")
@@ -49,13 +46,13 @@ defmodule Tweeter do
         
         IO.inspect get_hashtag_tweets("This")
 
+        post_retweet("abhi", "apurv", 0)
+
+
+        IO.inspect get_user_state("Karan")
+        IO.inspect get_user_state("abhi")
         #IO.inspect get_user_state("apurv")
         #IO.inspect get_user_state("Karan")
-        
-
-       
-
-        
 
 
         logout_user("keyur")
@@ -134,9 +131,13 @@ defmodule Tweeter do
     end
 
     def post_tweet(username, tweet_text) do
-        
         #tweet = GenServer.call(String.to_atom("mainserver"), {:post_tweet,{username,tweet_text}}) 
         {:tweet,tweet} = GenServer.call(String.to_atom(username),{:add_tweet,{tweet_text}})
+        IO.inspect tweet
+    end
+
+    def post_retweet(username, tweet_username, tweet_id) do
+        {:tweet,tweet} = GenServer.call(String.to_atom(username),{:retweet,{tweet_username,tweet_id}})
         IO.inspect tweet
           
     end

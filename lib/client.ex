@@ -42,6 +42,36 @@ defmodule Client do
         {finalTweet, userState}
     end
 
+    def upsert_retweet(userState, fullTweet) do
+        username = Map.get(userState, "username")
+        tweets = Map.get(userState, "tweets")
+        tweet = elem(fullTweet,0)
+
+        if tweets != nil && length(tweets) > 0 do
+            [lastTweet|allOthers] = tweets
+            lastTweetId = elem(lastTweet,1)
+            IO.inspect lastTweetId
+            
+            finalTweet = {tweet, lastTweetId+1, :calendar.universal_time(), username, fullTweet}
+            tweets = [finalTweet | tweets]
+        else
+            finalTweet = {tweet,0,:calendar.universal_time(), username, fullTweet}
+            tweets = [finalTweet]
+        end
+
+        #Parse Tweet for Hashtag and Mentions
+        parse_tweet(finalTweet)
+        
+        #Send Tweet to follower dashboard
+        followings = Map.get(userState, "followings")
+        add_to_follower_dashboards(finalTweet, followings)
+        
+        #Add tweet to user state
+        userState = Map.put(userState, "tweets", tweets)
+        
+        {finalTweet, userState}
+    end
+
     def upsert_user_follower(userState, follower) do
         if userState != nil do
             followers = Map.get(userState, "followers")
@@ -70,7 +100,6 @@ defmodule Client do
     def process_hashtags(word, tweet) do
         if String.first(word)=="#" do           
             hashtag =  String.slice(word,1,String.length(word))
-            IO.puts"put hashhhhhhhh"
             GenServer.call(String.to_atom("mainserver"), {:add_hashtag, {hashtag,tweet}})
         end 
     end
@@ -128,6 +157,25 @@ defmodule Client do
             tweets = Map.get(userState, "tweets")
         end
         {:reply,{:tweets,tweets}, userState}
+    end
+
+    def handle_call({:retweet ,new_message}, _from, userState) do
+        userOfTweet = elem(new_message,0)
+        tweetId = elem(new_message,1)
+        fullTweet = GenServer.call(String.to_atom(userOfTweet), {:get_tweet_by_tweetId, {tweetId}})
+        {tweet, userState} = upsert_retweet(userState, fullTweet)
+        {:reply,{:tweet,tweet}, userState}
+    end
+
+    def handle_call({:get_tweet_by_tweetId ,new_message}, _from, userState) do
+        tweetId = elem(new_message, 0)
+        tweets = Map.get(userState, "tweets");
+        if length(tweets) >= tweetId do
+            tweet = Enum.at(tweets, tweetId)
+        else
+            tweet = Enum.at(tweets, 0)
+        end
+        {:reply, tweet, userState}
     end
 
     def handle_call({:add_follower ,new_message}, _from, userState) do
