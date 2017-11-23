@@ -154,7 +154,7 @@ defmodule Client do
     end
 
     def terminate(reason, state) do
-        IO.puts "Going Down: #{inspect(state)}"
+        #IO.puts "Going Down: #{inspect(state)}"
         :normal
       end
 
