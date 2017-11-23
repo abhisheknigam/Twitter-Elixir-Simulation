@@ -3,12 +3,12 @@ defmodule Server do
 
     def init(args) do
        # arguments = parse_args(args)
-        %{"users" => %{}, "hashtags" => %{}, "mentions" => %{}}
+        {:ok, %{"users" => %{}, "hashtags" => %{}, "mentions" => %{}}}
     end
 
     
     def initialize_new_user(username, passwd) do
-        %{"username" => username, "password" => passwd, "tweets" => [], "followers"=>[],"followings"=>[], "dashbord"=>[] }
+        %{"username" => username, "password" => passwd, "tweets" => [], "followers"=>[],"followings"=>[] }
     end
 
     def register_user(users,username, passwd) do
@@ -142,11 +142,14 @@ defmodule Server do
         password = elem(user_info,1)
         retVal = false
         user = Map.get(Map.get(state,"users"),username)
+       
         #authenticate user
-        if(user!= nil && Map.get(user,"password") == password) do
+        if(user != nil && Map.get(user,"password") == password) do
             retVal = true
+            IO.inspect "here"
             dashboard = build_dashboard(user, Map.get(state,"users"))
             user = Map.put(user,"dashboard",dashboard)
+            
             GenServer.start_link(Client, user, name: String.to_atom(username))
         else
             retVal = false
