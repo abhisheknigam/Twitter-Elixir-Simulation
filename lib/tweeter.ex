@@ -19,6 +19,11 @@ defmodule Tweeter do
         login_user("keyur","baldha")
         login_user("abhi","shek")
         post_tweet("keyur","helooo")
+        IO.inspect get_user_state("keyur")
+        IO.inspect get_server_user_state("keyur")
+        
+
+
         #logout_user("keyur")
         #logout_user("abhi")
     end
@@ -36,8 +41,13 @@ defmodule Tweeter do
         state
     end
 
+    def get_server_user_state(username) do
+        user = GenServer.call(String.to_atom("mainserver"),{:get_user_state,username})         
+        user
+    end
+
     def get_user_state(username) do
-        user = GenServer.call(String.to_atom("mainserver"),{:get_user_state,username}) 
+        user = GenServer.call(String.to_atom(username),{:get_user_state,username})         
         user
     end
     
