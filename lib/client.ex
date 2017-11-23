@@ -16,7 +16,7 @@ defmodule Client do
         if userState != nil do
             tweets = Map.get(userState, "tweets")
             if tweets != nil do
-                [allOthers|lastTweet] = tweets
+                [lastTweet|allOthers] = tweets
                 lastTweetId = elem(lastTweet,1)
                 finalTweet = {tweet, Integer.parse(lastTweetId)+1, :calendar.universal_time(), username}
                 tweets = [finalTweet | tweets]

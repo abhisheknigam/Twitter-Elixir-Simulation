@@ -18,8 +18,10 @@ defmodule MainModule1 do
         register_user("abhi","shek")
         login_user("keyur","baldha")
         login_user("abhi","shek")
-        logout_user("keyur")
-        logout_user("abhi")
+        post_tweet("keyur","helooo")
+        
+        #logout_user("keyur")
+        #logout_user("abhi")
     end
 
     def post_tweet(username, tweet_text) do
