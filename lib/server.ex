@@ -7,11 +7,6 @@ defmodule Server do
     end
 
     
-
-    def initialize_state() do
-        state = {}
-    end
-
     def initialize_new_user(username, passwd) do
         %{"username" => username, "password" => passwd, "tweets" => [], "followers"=>[],"followings"=>[] }
     end
@@ -33,7 +28,7 @@ defmodule Server do
         
         tweets = []
         if(is_user_online(username) == true) do
-           {:tweets,tweets} = GenServer.call({:get_tweets,String.to_atom(username)},{:print_message,"Keyur"}) 
+           {:tweets,tweets} = GenServer.call(String.to_atom(username), {:get_tweets,{:print_message,"Keyur"}}) 
         else 
             tweets = Map.get(Map.get(users, username),"tweets")
         end
@@ -119,7 +114,9 @@ defmodule Server do
 
     #add tweet to user list
     #0 -> text, 1-> id, 2 -> timestamp, 3 -> username
-    def handle_call({:post_tweet ,username, tweet_text}, _from, state) do  
+    def handle_call({:post_tweet , new_tweet}, _from, state) do  
+        username = elem(new_tweet,0)
+        tweet_text = elem(new_tweet,1)
         #tweet_data -> {}
         #username = elem(tweet, 3)
         #users = Map.get(state, "users")
@@ -130,7 +127,7 @@ defmodule Server do
         is_online = is_user_online(username)
         tweet = {}
         if(is_online == true) do
-            {:tweet,tweet} = GenServer.call({:add_tweet,String.to_atom(username)},{tweet_text})
+            {:tweet,tweet} = GenServer.call(String.to_atom(username),{:add_tweet,{tweet_text}})
 
         end
 
@@ -158,9 +155,11 @@ defmodule Server do
     end
 
     def handle_call({:logout,username},_from, state) do
+        username = elem(username,0)
         if(is_user_online(username) != null) do
-            GenServer.call({:go_offline,String.to_atom(username)},{:print_message,"Keyur"}) 
+            retVal = GenServer.call(String.to_atom(username),{:go_offline, {:print_message,"Keyur"}}) 
         end
+        {:reply,retVal,state}
     end
 
     def handle_call({:add_to_following_dead ,new_message},_from,state) do
@@ -207,7 +206,7 @@ defmodule Server do
 
     
     def handle_call({:get_state ,new_message},_from,state) do  
-        {:reply,state,state}
+        {:reply, state, state}
     end
     
 

@@ -1,17 +1,8 @@
 defmodule Client do
     use GenServer
 
-    def init(args) do
-        username = elem(args,0)
-        passwd = elem(args,0)
-        state = GenServer.call(String.to_atom(mainserver),{:get_state, "mainserver"})         
-        serv_resp = Map.fetch(state, String.to_atom(username)
-        if(elem(serv_resp,0)== String.to_atom("ok")){
-          userState = elem(serv_resp,1)
-        }
-        else{
-          userState = {"username" => username, "password" => passwd, "tweets" => [], "follwers"=>[],"follwings"=>[], "dashboard" => [] }
-        }
+    def init(state) do
+        {:ok,state}
     end 
 
     def add_to_follower_dashboards(finalTweet, followings) do
@@ -97,7 +88,7 @@ defmodule Client do
 
     def process_mentions(word, tweet) do
         if String.first(word) == "@" do
-            GenServer.call(String.to_atom("mainserver"), {:add_mentions, {word,tweet})
+            GenServer.call(String.to_atom("mainserver"), {:add_mentions, {word,tweet}})
         end
     end
 
