@@ -1,4 +1,4 @@
-defmodule MainModule1 do
+defmodule Tweeter do
     use GenServer
 
     def main(args) do
