@@ -101,10 +101,7 @@ defmodule Client do
         username = Map.get(userState,"username");
         IO.inspect "-------------------------------------------------------------------------"
         userState = GenServer.call(String.to_atom("mainserver"), {:update_user_state, {username,userState}})
-        #{:stop, :normal, userState}
-        #terminate(:normal, userState)
-        #{:reply, true, userState}
-        {:stop, :normal, status}
+        {:reply, true, userState}
     end
 
     def handle_call({:add_tweet ,new_message}, _from, userState) do

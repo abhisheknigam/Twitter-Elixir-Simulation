@@ -166,10 +166,21 @@ defmodule Server do
 
     def handle_call({:logout,username},_from, state) do
         username = elem(username,0)
-        if(is_user_online(username) != nil) do
-            retVal = GenServer.call(String.to_atom(username),{:go_offline, {:print_message,"Keyur"}}) 
+        if(is_user_online(username) == true) do
+            userState = Genserver.call(String.to_atom(username),{:get_user_state, username})
+            users = Map.get(state,"users")
+            users = Map.put(users, username, userState)
+            state = Map.put(state, "users", users)
+            #retVal = GenServer.call(String.to_atom(username),{:go_offline, {:print_message,"Keyur"}}) 
+            
+            pid = Process.whereis(String.to_atom(username)) 
+            GenServer.stop(pid, :normal)
+
+            pid = Process.whereis(String.to_atom(username)) 
+            IO.puts "PID"
+            IO.inspect  pid
         end
-        {:reply,retVal,state}
+        {:reply,true,state}
     end
 
     def handle_call({:add_to_following_dead ,new_message},_from,state) do
