@@ -48,7 +48,7 @@ defmodule Tweeter do
         IO.inspect get_user_state("Karan")
         
 
-        IO.puts "------------------server state---------------------"
+       
 
         
 
@@ -56,12 +56,15 @@ defmodule Tweeter do
         logout_user("keyur")
         logout_user("abhi")
 
-        :timer.sleep(2000)
+        #:timer.sleep(2000)
 
         login_user("keyur","baldha")
-        
+        IO.puts "------------------server state---------------------"
         IO.inspect get_server_state
 
+        IO.puts "------------------user state---------------------"
+        IO.inspect get_user_state("keyur")
+        
         IO.gets ""
     end
 
