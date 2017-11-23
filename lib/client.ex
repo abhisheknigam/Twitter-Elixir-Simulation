@@ -8,6 +8,7 @@ defmodule Client do
     def add_to_follower_dashboards(finalTweet, followings) do
         if length(followings) > 0 do
             [following | followings] = followings
+            #IO.inspect "Dashboard followers" <> following
             GenServer.call(String.to_atom(following), {:add_to_dashboard, {finalTweet}})
             add_to_follower_dashboards(finalTweet, followings) 
         end
@@ -20,7 +21,8 @@ defmodule Client do
             if tweets != nil && length(tweets) > 0 do
                 [lastTweet|allOthers] = tweets
                 lastTweetId = elem(lastTweet,1)
-                finalTweet = {tweet, Integer.parse(lastTweetId)+1, :calendar.universal_time(), username}
+                IO.inspect lastTweetId
+                finalTweet = {tweet, lastTweetId+1, :calendar.universal_time(), username}
                 tweets = [finalTweet | tweets]
             else
                 finalTweet = {tweet,0,:calendar.universal_time(), username}
@@ -40,40 +42,21 @@ defmodule Client do
         {finalTweet, userState}
     end
 
-    def add_follower(username, follower) do
-        pid = Process.whereis(String.to_atom(username))
-
-        if(pid != nil && Process.alive?(pid) == true) do   
-            GenServer.call(String.to_atom(follower), {:add_to_following_alive, {username}}) 
-        else
-            GenServer.call(String.to_atom("mainserver"), {:add_to_following_dead, {username, follower}}) 
-        end
-
-        GenServer.call(String.to_atom(username), {:add_to_follower, {follower}})
-    end
-
     def upsert_user_follower(userState, follower) do
         if userState != nil do
             followers = Map.get(userState, "followers")
-            if followers != nil do
-                followers = [follower | followers]
-            else
-                followers = [follower]
-            end
-            userState = Map.put(userState, "followers", follower)
+            followers = [follower | followers]
+            userState = Map.put(userState, "followers", followers)
         end
         {follower, userState}
     end
 
     def upsert_user_following(userState, following) do
         if userState != nil do
-            followings = Map.get(userState, "following")
-            if followings != nil do
-                followings = [following | followings]
-            else
-                followings = [following]
-            end
-            userState = Map.put(userState, "followings", following)
+            followings = Map.get(userState, "followings")
+            followings = [following | followings]
+            IO.inspect followings
+            userState = Map.put(userState, "followings", followings)
         end
         {following, userState}
     end
@@ -81,7 +64,7 @@ defmodule Client do
     def upsert_user_dashboard(userState, tweet) do
         dashboard = Map.get(userState, "dashboard")
         dashboard = [tweet|dashboard]
-        userState = userState.put(userState, "dashboard", dashboard)
+        userState = Map.put(userState, "dashboard", dashboard)
     end
 
     def process_hashtags(word, tweet) do
@@ -107,7 +90,7 @@ defmodule Client do
     end
 
     def handle_call({:add_to_dashboard ,new_message}, _from, userState) do
-        upsert_user_dashboard(userState, elem(new_message,0))
+        userState = upsert_user_dashboard(userState, elem(new_message,0))
         {:reply, {:ok}, userState}
     end
 
@@ -126,6 +109,7 @@ defmodule Client do
 
     def handle_call({:add_to_following_alive ,new_message}, _from, userState) do
         following = elem(new_message,0)
+        IO.inspect "Following" <> following
         {following, userState} = upsert_user_following(userState, following)
         {:reply,following,userState}
     end
@@ -141,6 +125,22 @@ defmodule Client do
             tweets = Map.get(userState, "tweets")
         end
         {:reply,{:tweets,tweets}, userState}
+    end
+
+    def handle_call({:add_follower ,new_message}, _from, userState) do
+        username = Map.get(userState,"username")
+        follower = elem(new_message,0)
+
+        pid = Process.whereis(String.to_atom(follower))
+
+        if(pid != nil && Process.alive?(pid) == true) do   
+            GenServer.call(String.to_atom(follower), {:add_to_following_alive, {username}}) 
+        else
+            GenServer.call(String.to_atom("mainserver"), {:add_to_following_dead, {username, follower}}) 
+        end
+        {follower, userState} = upsert_user_follower(userState, follower)
+        
+        {:reply, userState, userState}
     end
 
     def handle_call({:get_user_state ,new_message}, _from, userState) do

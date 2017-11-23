@@ -16,11 +16,36 @@ defmodule Tweeter do
         
         register_user("keyur","baldha")
         register_user("abhi","shek")
+        register_user("apurv","apurv")
+        register_user("Karan","Karan")
+
         login_user("keyur","baldha")
         login_user("abhi","shek")
+        login_user("apurv","apurv")
+        login_user("Karan","Karan")
+
+
+        
+
+
+        add_follower("abhi","keyur")
+        add_follower("apurv","keyur")
+        add_follower("Karan","keyur")
+
+        add_follower("Karan","abhi")
+        add_follower("keyur","abhi")
+
         post_tweet("keyur","helooo")
-        IO.inspect get_user_state("keyur")
-        IO.inspect get_server_user_state("keyur")
+        post_tweet("keyur","jijijiij")
+
+        post_tweet("apurv","I am IBM Watson")
+        post_tweet("Karan","I am Anita's Lover")
+        post_tweet("abhi","This is from abhi")
+
+
+
+        IO.inspect get_user_state("apurv")
+        IO.inspect get_user_state("Karan")
         
 
 
@@ -79,4 +104,7 @@ defmodule Tweeter do
         end        
     end
 
+    def add_follower(username, follower) do
+        user = GenServer.call(String.to_atom(username),{:add_follower, {follower}})         
+    end
 end
