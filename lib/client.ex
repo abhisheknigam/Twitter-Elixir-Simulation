@@ -10,9 +10,15 @@ defmodule Client do
           userState = elem(serv_resp,1)
         }
         else{
-          userState = {"username" => username, "password" => passwd, "tweets" => [], "follwers"=>[],"follwings"=>[] }
+          userState = {"username" => username, "password" => passwd, "tweets" => [], "follwers"=>[],"follwings"=>[], "dashboard" => [] }
         }
     end 
+
+    def add_to_follower_dashboards(finalTweet, followings) do
+        [following | followings] = followings
+        GenServer.call(String.to_atom(following), {:add_to_dashboard, {finalTweet}})
+        add_to_follower_dashboards(finalTweet, followings) 
+    end
 
     def upsert_user_tweet(userState, tweet) do
         username = Map.get(userState, "username")
@@ -21,7 +27,7 @@ defmodule Client do
             if tweets != nil do
                 [allOthers|lastTweet] = tweets
                 lastTweetId = elem(lastTweet,1)
-                finalTweet = {tweet, Integer.parse(lastTweetId+1), :calendar.universal_time(), username}
+                finalTweet = {tweet, Integer.parse(lastTweetId)+1, :calendar.universal_time(), username}
                 tweets = [finalTweet | tweets]
             else
                 tweets = [{tweet,0,:calendar.universal_time()}]
@@ -29,6 +35,10 @@ defmodule Client do
 
             #Parse Tweet for Hashtag and Mentions
             parse_tweet(finalTweet)
+
+            #Send Tweet to follower dashboard
+            followings = Map.get(userState, "followings")
+            add_to_follower_dashboards(finalTweet, followings)
             
             #Add tweet to user state
             userState = Map.put(userState, "tweets", tweet)
@@ -74,6 +84,11 @@ defmodule Client do
         {following, userState}
     end
 
+    def upsert_user_dashboard(userState, tweet) do
+        dashboard = Map.get(userState, "dashboard")
+        dashboard = [tweet|dashboard]
+    end
+
     def process_hashtags(word, tweet) do
         if String.first(word)=="#" do
             GenServer.call(String.to_atom("mainserver"), {:add_hashtag, {word,tweet}})
@@ -95,9 +110,16 @@ defmodule Client do
         )
     end
 
+    def handle_calll({:add_to_dashboard ,new_message}, _from, userState) do
+        upsert_user_dashboard(userState, elem(new_message,0))
+        {:reply, {:ok}, userState}
+    end
+
     def handle_calll({:go_offline ,new_message}, _from, userState) do
         username = Map.get(userState,"username");
         GenServer.call(String.to_atom("mainserver"), {:update_user_state, {username,userState}})
+        Genserver.stop(String.to_atom(username))
+        {:reply, {:ok}, userState}
     end
 
     def handle_call({:add_tweet ,new_message}, _from, userState) do
