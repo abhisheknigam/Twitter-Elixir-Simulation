@@ -54,6 +54,7 @@ defmodule Server do
         followings = Map.get(user,"followings")   
         self_tweets = Map.get(user,"tweets")           
         dashboard = merge_tweets(followings,self_tweets,0,users)
+        dashboard = Enum.sort(dashboard,&(elem(&1,2) > elem(&2,2)))
         dashboard
     end
 
@@ -69,10 +70,10 @@ defmodule Server do
 
     def is_user_online(username) do
         is_online = false
-        IO.puts username
+       # IO.puts username
         pid = Process.whereis(String.to_atom(username))   
-        IO.inspect username <> " is  :: "
-        IO.inspect pid   
+       # IO.inspect username <> " is  :: "
+       # IO.inspect pid   
         if(pid != nil && Process.alive?(pid) == true) do
             is_online = true
         end
@@ -147,14 +148,13 @@ defmodule Server do
         password = elem(user_info,1)
         retVal = false
         user = Map.get(Map.get(state,"users"),username)
-       IO.inspect user
+       #IO.inspect user
         #authenticate user
-        if(user != nil && Map.get(user,"password") == password) do
+        if(is_user_online(username) == false && user != nil && Map.get(user,"password") == password) do
             retVal = true
             IO.inspect "here"
             dashboard = build_dashboard(user, Map.get(state,"users"))
-            user = Map.put(user,"dashboard",dashboard)
-            
+            user = Map.put(user,"dashboard",dashboard)            
             GenServer.start_link(Client, user, name: String.to_atom(username))
         else
             retVal = false
@@ -199,7 +199,7 @@ defmodule Server do
         hashtag = elem(hash_info,0)
         tweet = elem(hash_info,1)
         #{hashtag, tweet}
-        IO.puts "adddd   hash tags " <> hashtag 
+        #IO.puts "adddd   hash tags " <> hashtag 
         hashtag_map = Map.get(state,"hashtags")
         if(Map.get(hashtag_map,hashtag) == nil) do
             hashtag_map = Map.put(hashtag_map,hashtag,[])
