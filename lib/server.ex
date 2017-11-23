@@ -73,7 +73,6 @@ defmodule Server do
         pid = Process.whereis(String.to_atom(username))   
         IO.inspect username <> " is  :: "
         IO.inspect pid   
-        IO.inspect Process.alive?(pid)  
         if(pid != nil && Process.alive?(pid) == true) do
             is_online = true
         end
@@ -167,7 +166,7 @@ defmodule Server do
     def handle_call({:logout,username},_from, state) do
         username = elem(username,0)
         if(is_user_online(username) == true) do
-            userState = Genserver.call(String.to_atom(username),{:get_user_state, username})
+            userState = GenServer.call(String.to_atom(username),{:get_user_state, username})
             users = Map.get(state,"users")
             users = Map.put(users, username, userState)
             state = Map.put(state, "users", users)
