@@ -143,6 +143,10 @@ defmodule Client do
         {:reply,{:tweets,tweets}, userState}
     end
 
+    def handle_call({:get_user_state ,new_message}, _from, userState) do
+        {:reply, userState, userState}
+    end
+
 end
 
 #{:news,size} = GenServer.call({:bit_coin,String.to_atom(server_name)},{:print_message,"Keyur"}, :infinity)    
