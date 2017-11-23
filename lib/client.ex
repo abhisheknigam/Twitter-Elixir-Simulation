@@ -111,7 +111,7 @@ defmodule Client do
     def handle_call({:go_offline ,new_message}, _from, userState) do
         username = Map.get(userState,"username");
         GenServer.call(String.to_atom("mainserver"), {:update_user_state, {username,userState}})
-        Genserver.stop(String.to_atom(username))
+        Genserver.stop(String.to_atom(username),:shutdown, 5000)
         {:reply, true, userState}
     end
 
