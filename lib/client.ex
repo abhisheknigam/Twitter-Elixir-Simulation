@@ -1,17 +1,8 @@
 defmodule Client do
     use GenServer
 
-    def init(args) do
-        username = elem(args,0)
-        passwd = elem(args,0)
-        state = GenServer.call(String.to_atom(mainserver),{:get_state, "mainserver"})         
-        serv_resp = Map.fetch(state, String.to_atom(username)
-        if(elem(serv_resp,0)== String.to_atom("ok")){
-          userState = elem(serv_resp,1)
-        }
-        else{
-          userState = {"username" => username, "password" => passwd, "tweets" => [], "follwers"=>[],"follwings"=>[] }
-        }
+    def init(state) do
+        {:ok,state}
     end 
 
     def upsert_user_tweet(userState, tweet) do
