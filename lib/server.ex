@@ -8,7 +8,7 @@ defmodule Server do
 
     
     def initialize_new_user(username, passwd) do
-        %{"username" => username, "password" => passwd, "tweets" => [], "followers"=>[],"followings"=>[], "dashbord"=>[] }
+        %{"username" => username, "password" => passwd, "tweets" => [], "followers"=>[],"followings"=>[] }
     end
 
     def register_user(users,username, passwd) do

@@ -103,15 +103,15 @@ defmodule Client do
         )
     end
 
-    def handle_calll({:add_to_dashboard ,new_message}, _from, userState) do
+    def handle_call({:add_to_dashboard ,new_message}, _from, userState) do
         upsert_user_dashboard(userState, elem(new_message,0))
         {:reply, {:ok}, userState}
     end
 
-    def handle_calll({:go_offline ,new_message}, _from, userState) do
+    def handle_call({:go_offline ,new_message}, _from, userState) do
         username = Map.get(userState,"username");
         GenServer.call(String.to_atom("mainserver"), {:update_user_state, {username,userState}})
-        Genserver.stop(String.to_atom(username))
+        Genserver.stop(String.to_atom(username),:shutdown, 5000)
         {:reply, true, userState}
     end
 
