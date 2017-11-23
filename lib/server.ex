@@ -51,8 +51,9 @@ defmodule Server do
     end
 
     def build_dashboard(user,users) do
-        followings = Map.get(user,"followings")              
-        dashboard = merge_tweets(followings,[],0,users)
+        followings = Map.get(user,"followings")   
+        self_tweets = Map.get(user,"tweets")           
+        dashboard = merge_tweets(followings,self_tweets,0,users)
         dashboard
     end
 
@@ -210,8 +211,10 @@ defmodule Server do
         {:reply,state,state}
     end
 
-    def handle_call({:add_mentions , {mentions, tweet}}, _from, state) do
+    def handle_call({:add_mentions , mentions_info}, _from, state) do
         
+        mentions = elem(mentions_info, 0)
+        tweet = elem(mentions_info, 1)
         mentions_map = Map.get(state,"mentions")
         users = Map.get(state,"users")
         if(Map.get(users,mentions) != nil) do
@@ -227,7 +230,34 @@ defmodule Server do
         {:reply,state,state}
     end
 
-    
+    def handle_call({:get_hash_list , hashtag}, _from, state) do
+        hashtag = elem(hashtag, 0)
+
+        hashtags = Map.get(state,"hashtags")
+
+        
+        tweets = Map.get(hashtags,hashtag)
+        #IO.puts"------------------------herereererer------------"
+        if(tweets == nil) do
+            tweets = []
+        end
+        #IO.inspect tweets
+        {:reply,tweets,state}
+    end
+
+    def handle_call({:get_mentions_list , username}, _from, state) do
+        username = elem(username, 0)
+
+        mentions = Map.get(state,"mentions")
+
+        tweets = Map.get(mentions, username)
+        
+        if(tweets == nil) do
+            tweets = []
+        end
+        {:reply,tweets,state}
+    end    
+
     def handle_call({:get_state ,new_message},_from,state) do  
         {:reply, state, state}
     end
