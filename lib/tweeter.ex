@@ -61,6 +61,8 @@ defmodule Tweeter do
         userlist = create_users(50, [])
         register_and_login(userlist)
         post_random_tweets(userlist,100)
+        map_set = MapSet.new
+        map_set = add_random_followers(userlist, 50, map_set)
         logout_all_users(userlist)
 
 
@@ -94,7 +96,31 @@ defmodule Tweeter do
             :timer.sleep(50) 
             post_random_tweets(userlist,count-1)
         end
+    end
 
+    def add_random_followers(userlist, count, map_set) do
+        userCount = length(userlist)        
+        if(count == 0) do
+
+        else
+            user = :rand.uniform(userCount)           
+            username = elem(Enum.at(userlist,user-1),0)
+            follower = :rand.uniform(userCount)
+            followerName = elem(Enum.at(userlist,follower-1),0)
+
+            IO.puts "Tweet posted by " <> username
+            IO.puts "Tweet posted by" <> followerName
+
+            IO.inspect username <> "-" <> followerName
+            pairExists = MapSet.member?(map_set, username <> "-" <> followerName)
+            
+            if(pairExists != nil && username != followerName) do
+                add_follower(username, followerName)
+                map_set = MapSet.put(map_set, username <> "-" <> followerName)
+            end 
+            add_random_followers(userlist, count-1, map_set)
+        end
+        map_set
     end
 
     def register_and_login(userlist) do
@@ -116,7 +142,7 @@ defmodule Tweeter do
             create_users(number-1,userlist)
         end
     end
-    
+
     def random_username(length) do
         :crypto.strong_rand_bytes(length) |> Base.url_encode64 |> binary_part(0, length)
       end
