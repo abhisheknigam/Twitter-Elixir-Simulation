@@ -248,7 +248,7 @@ defmodule Server do
     def handle_call({:get_mentions_list , username}, _from, state) do
         username = elem(username, 0)
 
-        mzentions = Map.get(state,"mentions")
+        mentions = Map.get(state,"mentions")
 
         tweets = Map.get(mentions, username)
         
