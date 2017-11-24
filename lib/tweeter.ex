@@ -20,6 +20,10 @@ defmodule Tweeter do
         register_user("Karan","Karan")
 
         login_user("keyur","baldha")
+        :timer.sleep(2500)
+        login_user("keyur","baldha")
+        
+        :timer.sleep(11500)
         login_user("abhi","shek")
         login_user("apurv","apurv")
         login_user("Karan","Karan")
@@ -92,7 +96,12 @@ defmodule Tweeter do
             user = :rand.uniform(userCount)           
             username = elem(Enum.at(userlist,user-1),0)
             IO.puts "Tweet posted by " <> username
-            post_tweet(username,"test tweet:::" <> Integer.to_string(count))
+            shouldAddHashTag = :rand.uniform(2) - 1
+            hashtagStr = "" 
+            if(shouldAddHashTag == 0) do
+                hashtagStr = "#" <> random_hashtag(5)
+            end
+            post_tweet(username,"test tweet::: " <> hashtagStr <> " " <> Integer.to_string(count))
             :timer.sleep(50) 
             post_random_tweets(userlist,count-1)
         end
@@ -142,10 +151,10 @@ defmodule Tweeter do
             create_users(number-1,userlist)
         end
     end
-
-    def random_username(length) do
+    
+    def random_hashtag(length) do
         :crypto.strong_rand_bytes(length) |> Base.url_encode64 |> binary_part(0, length)
-      end
+    end
 
     def post_tweet(username, tweet_text) do
         #tweet = GenServer.call(String.to_atom("mainserver"), {:post_tweet,{username,tweet_text}}) 
