@@ -3,6 +3,7 @@ defmodule TweeterTest do
   doctest Tweeter
 
   test "greets the world" do
+    Tweeter.main([])
     assert Tweeter.hello() == :world
   end
 end
