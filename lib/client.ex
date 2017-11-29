@@ -195,7 +195,7 @@ defmodule Client do
         if(pid != nil && Process.alive?(pid) == true) do   
             GenServer.call(String.to_atom(follower), {:add_to_following_alive, {username}}) 
         else
-            GenServer.call(String.to_atom("mainserver"), {:add_to_following_dead, {username, follower}}) 
+            GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:add_to_following_dead, {username, follower}}) 
         end
         {follower, userState} = upsert_user_follower(userState, follower)
         

@@ -55,10 +55,13 @@ defmodule Tweeter do
     def run_test_new do
         IO.inspect "register user"
         register_user("keyur","baldha")
-        
+        register_user("abhi","shek")
 
         login_user("keyur","baldha")
+        login_user("abhi","shek")
         post_tweet("keyur","helooo")
+        add_follower("abhi","keyur")
+
         :timer.sleep(2500)
         logout_user("keyur")
 
@@ -71,6 +74,7 @@ defmodule Tweeter do
         register_user("Karan","Karan")
 
         login_user("keyur","baldha")
+        
         :timer.sleep(2500)
         login_user("keyur","baldha")
         
