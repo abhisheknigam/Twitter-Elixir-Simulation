@@ -4,6 +4,7 @@ defmodule Client do
     def init(user_info) do
         IO.inspect user_info
         userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)},{:get_login_state,elem(user_info,0)})        
+        IO.puts "user state::"
         IO.inspect userState
         {:ok,userState}
     end 

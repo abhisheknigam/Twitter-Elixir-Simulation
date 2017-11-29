@@ -242,8 +242,9 @@ defmodule Tweeter do
     end
 
     def login_user(username,password)  do
-        #retVal = GenServer.call({String.to_atom(user),String.to_atom("client@"<>get_ip_addr)}, {:login,{username,password}}) 
-        GenServer.start_link(Client, {username,password}, name: String.to_atom(username))
+        #retVal = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)}, {:login,{username,password}}) 
+        info = {username,password}
+        GenServer.start_link(Client, info, name: String.to_atom(username))
         # if(retVal == true) do 
         #     IO.inspect "" <> username <>" login successful"
         #     IO.inspect get_user_state(username)

@@ -91,10 +91,13 @@ defmodule Server do
         username = elem(new_user_info, 0)
         password = elem(new_user_info,1)
         retValue = false
+        #IO.puts "register::"
         if(state["users"][username] == nil) do
             #add user
             retValue =  true
             users = register_user(Map.get(state,"users"),username,password)
+            #IO.puts "register::in::"
+            #IO.inspect users
             state = Map.put(state,"users",users)            
         end
         {:reply,retValue,state}
@@ -172,7 +175,8 @@ defmodule Server do
     def handle_call({:get_login_state, username}, _from, state) do
         user = Map.get(Map.get(state,"users"),username)
         dashboard = build_dashboard(user, Map.get(state,"users"))
-        {:reply,dashboard,state}
+        user = Map.put(user,"dashboard",dashboard) 
+        {:reply,user,state}
     end
 
     def handle_call({:logout,username},_from, state) do
