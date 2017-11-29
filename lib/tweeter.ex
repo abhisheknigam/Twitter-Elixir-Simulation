@@ -10,7 +10,8 @@ defmodule Tweeter do
             
             #start client 
             start_client
-            run_test_new
+            #run_test_new
+            run_tests
         end
         #run_tests
         IO.gets ""
@@ -268,12 +269,12 @@ defmodule Tweeter do
 
     def get_hashtag_tweets(hashtag) do
         IO.puts "----------------------------Tweets with hashtag "<> hashtag
-        tweets = GenServer.call(String.to_atom("mainserver"),{:get_hash_list, {hashtag}})         
+        tweets = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:get_hash_list, {hashtag}})         
     end
 
     def get_mention_tweets(username) do        
         IO.puts "--------------------Tweets with username "<> username
-        tweets = GenServer.call(String.to_atom("mainserver"),{:get_mentions_list, {username}})         
+        tweets = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:get_mentions_list, {username}})         
     end
 
     def add_follower(username, follower) do

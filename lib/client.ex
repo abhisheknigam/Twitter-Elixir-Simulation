@@ -108,14 +108,14 @@ defmodule Client do
     def process_hashtags(word, tweet) do
         if String.first(word)=="#" do           
             hashtag =  String.slice(word,1,String.length(word))
-            GenServer.call(String.to_atom("mainserver"), {:add_hashtag, {hashtag,tweet}})
+            GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:add_hashtag, {hashtag,tweet}})
         end 
     end
 
     def process_mentions(word, tweet) do
         if String.first(word) == "@" do
             username =  String.slice(word,1,String.length(word))
-            GenServer.call(String.to_atom("mainserver"), {:add_mentions, {username,tweet}})
+            GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:add_mentions, {username,tweet}})
         end
     end
 
