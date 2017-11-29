@@ -1,10 +1,17 @@
 defmodule Client do
     use GenServer
 
-    def init(state) do
-        {:ok,state}
+    def init(user_info) do
+        IO.inspect user_info
+        userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)},{:get_login_state,elem(user_info,0)})        
+        IO.inspect userState
+        {:ok,userState}
     end 
 
+    def log_in(user_info) do 
+        username = elem(user_info,0)                  
+        GenServer.start_link(__MODULE__, user_info, name: String.to_atom(username))      
+    end
     def add_to_follower_dashboards(finalTweet, followings) do
         if length(followings) > 0 do
             [following | followings] = followings

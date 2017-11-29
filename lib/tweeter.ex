@@ -3,15 +3,66 @@ defmodule Tweeter do
 
     def main(args) do
      
-        start_server
-        run_tests
-        
+        inp = process_arguments(args)
+        if(inp == "server") do
+            start_server
+        else
+            
+            #start client 
+            start_client
+            run_test_new
+        end
+        #run_tests
+        IO.gets ""
+    end
+    def start_client do
+
+        Node.start(String.to_atom("client@"<>get_ip_addr))
+        Node.set_cookie :"choco"
+        Node.connect(String.to_atom("server@"<>get_ip_addr))
+        IO.puts "connected to server::"        
+
+        # retVal = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:register_user,{username,password}}) 
+        # if(retVal == true) do 
+        #     IO.inspect "" <> username <>" registration successful"
+        # else
+        #     IO.inspect "" <> username <>" registration unsuccessful"
+        # end   
+
+    end
+
+    def process_arguments(arguments) do
+        {_, [input], _} = OptionParser.parse(arguments)
+        input = to_string input
+        input
+    end
+
+    def get_ip_addr do
+        {:ok,lst} = :inet.getif() 
+        x = elem(List.first(lst),0)
+        addr =  to_string(elem(x,0)) <> "." <>  to_string(elem(x,1)) <> "." <>  to_string(elem(x,2)) <> "." <>  to_string(elem(x,3))
+        addr  
     end
 
     def start_server do
+        IO.puts "server starting"
+        Node.start(String.to_atom("server@"<>get_ip_addr))
+        Node.set_cookie :"choco"
+  
         GenServer.start_link(Server, {}, name: String.to_atom("mainserver"))
     end
 
+    def run_test_new do
+        IO.inspect "register user"
+        register_user("keyur","baldha")
+        
+
+        login_user("keyur","baldha")
+        post_tweet("keyur","helooo")
+        :timer.sleep(2500)
+        logout_user("keyur")
+
+    end
     def run_tests do
         
         register_user("keyur","baldha")
@@ -158,7 +209,7 @@ defmodule Tweeter do
 
     def post_tweet(username, tweet_text) do
         #tweet = GenServer.call(String.to_atom("mainserver"), {:post_tweet,{username,tweet_text}}) 
-        {:tweet,tweet} = GenServer.call(String.to_atom(username),{:add_tweet,{tweet_text}})
+        {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:add_tweet,{tweet_text}})
         IO.inspect tweet
     end
 
@@ -169,12 +220,12 @@ defmodule Tweeter do
     end
 
     def get_server_state() do
-        state = GenServer.call(String.to_atom("mainserver"),{:get_state,{}}) 
+        state = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:get_state,{}}) 
         state
     end
 
     def get_server_user_state(username) do
-        user = GenServer.call(String.to_atom("mainserver"),{:get_user_state,username})         
+        user = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:get_user_state,username})         
         user
     end
 
@@ -185,23 +236,24 @@ defmodule Tweeter do
     
     def logout_user(username)  do
         
-        GenServer.call(String.to_atom("mainserver"),{:logout,{username}}) 
+        GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:logout,{username}}) 
         retVal = true
         IO.inspect "" <> username <>" logout successful"
     end
 
     def login_user(username,password)  do
-        retVal = GenServer.call(String.to_atom("mainserver"), {:login,{username,password}}) 
-        if(retVal == true) do 
-            IO.inspect "" <> username <>" login successful"
-            IO.inspect get_user_state(username)
-        else
-            IO.inspect "" <> username <>" login unsuccessful"
-        end    
+        #retVal = GenServer.call({String.to_atom(user),String.to_atom("client@"<>get_ip_addr)}, {:login,{username,password}}) 
+        GenServer.start_link(Client, {username,password}, name: String.to_atom(username))
+        # if(retVal == true) do 
+        #     IO.inspect "" <> username <>" login successful"
+        #     IO.inspect get_user_state(username)
+        # else
+        #     IO.inspect "" <> username <>" login unsuccessful"
+        # end    
     end
 
     def register_user(username,password) do
-        retVal = GenServer.call(String.to_atom("mainserver"),{:register_user,{username,password}}) 
+        retVal = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:register_user,{username,password}}) 
         if(retVal == true) do 
             IO.inspect "" <> username <>" registration successful"
         else

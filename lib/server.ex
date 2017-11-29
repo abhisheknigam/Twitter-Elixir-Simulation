@@ -159,8 +159,20 @@ defmodule Server do
         else
             retVal = false
         end 
-
         {:reply,retVal,state}
+    end
+
+    def handle_call({:get_dashBoard, username}, _from, state) do
+        user = Map.get(Map.get(state,"users"),username)
+        dashboard = build_dashboard(user, Map.get(state,"users"))
+        userState = Map.put(user,"dashboard",dashboard) 
+        {:reply,userState,state}
+    end
+
+    def handle_call({:get_login_state, username}, _from, state) do
+        user = Map.get(Map.get(state,"users"),username)
+        dashboard = build_dashboard(user, Map.get(state,"users"))
+        {:reply,dashboard,state}
     end
 
     def handle_call({:logout,username},_from, state) do
