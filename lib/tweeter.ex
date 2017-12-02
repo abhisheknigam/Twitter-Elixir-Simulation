@@ -4,6 +4,7 @@ defmodule Tweeter do
     def main(args) do
      
         inp = process_arguments(args)
+        numberofClients = 50
         if(inp == "server") do
             start_server
         else
@@ -13,10 +14,19 @@ defmodule Tweeter do
             #run_test_new
             #run_tests
             #IO.inspect getZipfDist(50)
-            run_zipf_test(50)
+            run_zipf_test(numberofClients)
         end
         #run_tests
+        
         IO.gets ""
+        IO.puts "------------------server state---------------------"
+        IO.inspect get_server_state
+
+        IO.puts "------------------user state---------------------"
+        Enum.map(1..numberofClients,fn(x)-> IO.inspect get_user_state("node_"<>Integer.to_string(x)) end)
+        #IO.inspect get_user_state("keyur")
+        
+       
     end
     def start_client do
 
@@ -64,7 +74,7 @@ defmodule Tweeter do
     end
 
     def start_server do
-        IO.puts "server starting"
+        #IO.puts "server starting"
         Node.start(String.to_atom("server@"<>get_ip_addr))
         Node.set_cookie :"choco"
   
@@ -184,7 +194,7 @@ defmodule Tweeter do
         else
             user = :rand.uniform(userCount)           
             username = elem(Enum.at(userlist,user-1),0)
-            IO.puts "Tweet posted by " <> username
+            #IO.puts "Tweet posted by " <> username
             shouldAddHashTag = :rand.uniform(2) - 1
             hashtagStr = "" 
             if(shouldAddHashTag == 0) do
@@ -206,8 +216,8 @@ defmodule Tweeter do
             follower = :rand.uniform(userCount)
             followerName = elem(Enum.at(userlist,follower-1),0)
 
-            IO.puts "Tweet posted by " <> username
-            IO.puts "Tweet posted by" <> followerName
+            #IO.puts "Tweet posted by " <> username
+            #IO.puts "Tweet posted by" <> followerName
 
             IO.inspect username <> "-" <> followerName
             pairExists = MapSet.member?(map_set, username <> "-" <> followerName)
@@ -256,9 +266,11 @@ defmodule Tweeter do
 
     def post_tweet(username, tweet_text) do
         #tweet = GenServer.call(String.to_atom("mainserver"), {:post_tweet,{username,tweet_text}}) 
-        IO.inspect "post tweet of "<> username
-        {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:add_tweet,{tweet_text}})
-        
+        #IO.inspect "post tweet of "<> username
+        if(is_user_online(username) == true) do
+            
+            {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:add_tweet,{tweet_text}})
+        end
         #{:tweet,tweet} = GenServer.call(String.to_atom(username),{:add_tweet,{tweet_text}})
         
         IO.inspect tweet
@@ -295,7 +307,7 @@ defmodule Tweeter do
     def login_user(username,password)  do
         #retVal = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)}, {:login,{username,password}}) 
         info = {username,password}
-        IO.puts "login " <> username
+        #IO.puts "login " <> username
         GenServer.start_link(Client, info, name: String.to_atom(username))
         # if(retVal == true) do 
         #     IO.inspect "" <> username <>" login successful"
@@ -325,7 +337,9 @@ defmodule Tweeter do
     end
 
     def add_follower(username, follower) do
-        user = GenServer.call(String.to_atom(username),{:add_follower, {follower}})         
+        if(is_user_online(username) == True) do
+            user = GenServer.call(String.to_atom(username),{:add_follower, {follower}})   
+        end      
     end
 
     def is_user_online(username) do
@@ -343,7 +357,7 @@ defmodule Tweeter do
     def simulate_user(username,client_count,weight) do
         weight  = round(weight)
         lst = Enum.concat([1..weight])
-        IO.puts "simulating " <> username
+        #IO.puts "simulating " <> username
         Enum.each(lst, fn(num) -> 
             #IO.inspect num
             random_username = get_random_user(username,client_count)
@@ -353,6 +367,7 @@ defmodule Tweeter do
             #process_mentions(word, finalTweet)
         end
         )
+        logout_user(username)
     end
 
 end
