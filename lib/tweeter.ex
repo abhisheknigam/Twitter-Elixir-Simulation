@@ -17,9 +17,13 @@ defmodule Tweeter do
             #run_test_new
             #run_tests
             #IO.inspect getZipfDist(50)
+            curTime = :os.system_time(:millisecond)
             run_zipf_test(numberofClients)            
-            IO.puts "------------------server state---------------------"
-            IO.inspect get_server_state
+            #IO.puts "------------------server state---------------------"
+            #IO.inspect get_server_state
+            IO.puts "-------time taken------------------"
+            timeTaken = :os.system_time(:millisecond) - curTime
+            IO.inspect timeTaken
             
         end
         #run_tests
@@ -309,12 +313,12 @@ defmodule Tweeter do
         end
         #{:tweet,tweet} = GenServer.call(String.to_atom(username),{:add_tweet,{tweet_text}})
         
-        IO.inspect tweet
+        #IO.inspect tweet
     end
 
     def post_retweet(username, tweet_username, tweet_id) do
         {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:retweet,{tweet_username,tweet_id}})
-        IO.inspect tweet
+        #IO.inspect tweet
           
     end
 
@@ -339,7 +343,7 @@ defmodule Tweeter do
         
         #GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:logout,{username}}) 
         #retVal = true
-        IO.inspect "" <> username <> " logout successful"
+        #IO.inspect "" <> username <> " logout successful"
     end
 
     def login_user(username,password)  do
@@ -360,9 +364,9 @@ defmodule Tweeter do
     def register_user(username,password) do
         retVal = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:register_user,{username,password}}) 
         if(retVal == true) do 
-            IO.inspect "" <> username <>" registration successful"
+            #IO.inspect "" <> username <>" registration successful"
         else
-            IO.inspect "" <> username <>" registration unsuccessful"
+           # IO.inspect "" <> username <>" registration unsuccessful"
         end        
     end
 
@@ -403,7 +407,7 @@ defmodule Tweeter do
             #IO.inspect num
             random_username = get_random_user(username,client_count)
             #IO.inspect random_username
-            post_tweet(username,"test tweet::" <> username <> Integer.to_string(num))
+            post_tweet(username,"test tweet::" <> username <> "_" <> Integer.to_string(num))
             add_follower(username,random_username)
             #process_mentions(word, finalTweet)
         end

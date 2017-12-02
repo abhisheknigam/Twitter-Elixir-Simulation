@@ -49,8 +49,8 @@ defmodule Server do
     end
 
     def build_dashboard(user,users) do
-        IO.puts "----login state----------"
-        IO.inspect Map.get(user,"followings")   
+        #IO.puts "----login state----------"
+        #IO.inspect Map.get(user,"followings")   
         
         followings = Map.get(user,"followings")   
         self_tweets = Map.get(user,"tweets")    
@@ -71,14 +71,14 @@ defmodule Server do
 
     def is_user_online(username) do
         is_online = false
-        IO.puts "is online? " <> username
+       # IO.puts "is online? " <> username
         pid = Process.whereis(String.to_atom(username))   
        # IO.inspect username <> " is  :: "
        # IO.inspect pid   
         if(pid != nil && Process.alive?(pid) == true) do
             is_online = true
         end
-        IO.puts is_online
+        #IO.puts is_online
         is_online
     end
 
@@ -190,7 +190,7 @@ defmodule Server do
     def handle_call({:get_login_state, username}, _from, state) do
         user = Map.get(Map.get(state,"users"),username)
         #IO.puts "----login state----------"
-        IO.inspect user
+        #IO.inspect user
         dashboard = build_dashboard(user, Map.get(state,"users"))
         user = Map.put(user,"dashboard",dashboard) 
         {:reply,user,state}
@@ -199,7 +199,7 @@ defmodule Server do
     def handle_call({:logout,username},_from, state) do
         username = elem(username,0)
         #if(is_user_online(username) == true) do
-            IO.puts "logginnnng out"
+           # IO.puts "logginnnng out"
             userState = GenServer.call({String.to_atom(username),String.to_atom("client@"<>Tweeter.get_ip_addr)},{:get_user_state, username})
             users = Map.get(state,"users")
             users = Map.put(users, username, userState)
@@ -210,7 +210,7 @@ defmodule Server do
             #GenServer.stop(pid, :normal)
 
             #pid = Process.whereis(String.to_atom(username)) 
-            IO.puts "PID"
+            #IO.puts "PID"
             #IO.inspect  pid
         #end
         {:reply,true,state}
@@ -229,7 +229,7 @@ defmodule Server do
     end
 
     def handle_call({:add_hashtag , hash_info}, _from, state) do
-        IO.puts("add tagsss")
+        #IO.puts("add tagsss")
         hashtag = elem(hash_info,0)
         tweet = elem(hash_info,1)
         hashtag_map = Map.get(state,"hashtags")

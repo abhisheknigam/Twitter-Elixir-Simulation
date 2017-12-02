@@ -2,7 +2,7 @@ defmodule Client do
     use GenServer
 
     def init(user_info) do
-        IO.inspect user_info
+        #IO.inspect user_info
         userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)},{:get_login_state,elem(user_info,0)})        
         #IO.puts "user state::"
         #IO.inspect userState
@@ -146,7 +146,7 @@ defmodule Client do
 
     def handle_cast({:go_offline ,new_message}, userState) do
         username = Map.get(userState,"username");
-        IO.inspect "-----------------------------Logging Out Client Request--------------------------------------------"
+        #IO.inspect "-----------------------------Logging Out Client Request--------------------------------------------"
         userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:update_user_state, {username,userState}})
         Process.exit(self(),:normal)
         {:noreply, userState}
@@ -182,8 +182,8 @@ defmodule Client do
         if userState != nil do
             isValid = log_in(new_message)
         end
-        IO.inspect "----------------------is Valid Authentication---------------------"
-        IO.inspect isValid
+        #IO.inspect "----------------------is Valid Authentication---------------------"
+        #IO.inspect isValid
         if isValid == false do
             Process.exit(self(),:normal)
         end
@@ -194,8 +194,8 @@ defmodule Client do
         userOfTweet = elem(new_message,0)
         tweetId = elem(new_message,1)
         fullTweet = GenServer.call(String.to_atom(userOfTweet), {:get_tweet_by_tweetId, {tweetId}})
-        IO.inspect "--------------------------RETWEET-------------------------------------"
-        IO.inspect fullTweet
+        #IO.inspect "--------------------------RETWEET-------------------------------------"
+        #IO.inspect fullTweet
         {tweet, userState} = upsert_retweet(userState, fullTweet)
         {:reply,{:tweet,tweet}, userState}
     end
