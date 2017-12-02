@@ -10,8 +10,11 @@ defmodule Client do
     end 
 
     def log_in(user_info) do 
-        username = elem(user_info,0)                  
-        GenServer.start_link(__MODULE__, user_info, name: String.to_atom(username))      
+        username = elem(user_info,0)
+        password = elem(user_info,1)
+        isValid = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)},{:authenticate_user,{username,password}})
+        isValid
+        #GenServer.start_link(__MODULE__, user_info, name: String.to_atom(username))      
     end
 
     def add_to_follower_dashboards(finalTweet, followings) do
@@ -173,6 +176,18 @@ defmodule Client do
             tweets = Map.get(userState, "tweets")
         end
         {:reply,{:tweets,tweets}, userState}
+    end
+
+    def handle_cast({:login ,new_message}, userState) do
+        if userState != nil do
+            isValid = log_in(new_message)
+        end
+        IO.inspect "----------------------is Valid Authentication---------------------"
+        IO.inspect isValid
+        if isValid == false do
+            Process.exit(self(),:normal)
+        end
+        {:noreply, userState}
     end
 
     def handle_call({:retweet ,new_message}, _from, userState) do

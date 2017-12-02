@@ -123,6 +123,15 @@ defmodule Server do
         {:reply,user,state}
     end
 
+    def handle_call({:authenticate_user ,{username,password}},_from,state) do 
+        isAuthenticated = false
+        user = Map.get(Map.get(state,"users"),username)
+        if(user != nil && Map.get(user,"password") == password) do
+            isAuthenticated = true
+        end
+        {:reply,isAuthenticated,state}
+    end
+
     #add tweet to user list
     #0 -> text, 1-> id, 2 -> timestamp, 3 -> username
     def handle_call({:post_tweet , new_tweet}, _from, state) do  
