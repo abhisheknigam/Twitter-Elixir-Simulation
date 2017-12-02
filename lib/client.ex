@@ -13,6 +13,7 @@ defmodule Client do
         username = elem(user_info,0)                  
         GenServer.start_link(__MODULE__, user_info, name: String.to_atom(username))      
     end
+
     def add_to_follower_dashboards(finalTweet, followings) do
         if length(followings) > 0 do
             [following | followings] = followings
@@ -42,6 +43,10 @@ defmodule Client do
 
             #Send Tweet to follower dashboard
             followings = Map.get(userState, "followings")
+            
+            userState = upsert_user_dashboard(userState, finalTweet)
+            #GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:update_state, {userState}})
+            
             add_to_follower_dashboards(finalTweet, followings)
             
             #Add tweet to user state
@@ -72,8 +77,9 @@ defmodule Client do
         
         #Send Tweet to follower dashboard
         followings = Map.get(userState, "followings")
+
         add_to_follower_dashboards(finalTweet, followings)
-        
+       
         #Add tweet to user state
         userState = Map.put(userState, "tweets", tweets)
         
@@ -103,6 +109,7 @@ defmodule Client do
         dashboard = Map.get(userState, "dashboard")
         dashboard = [tweet|dashboard]
         userState = Map.put(userState, "dashboard", dashboard)
+        userState
     end
 
     def process_hashtags(word, tweet) do
@@ -136,8 +143,9 @@ defmodule Client do
 
     def handle_call({:go_offline ,new_message},_from, userState) do
         username = Map.get(userState,"username");
-        IO.inspect "-------------------------------------------------------------------------"
-        userState = GenServer.call(String.to_atom("mainserver"), {:update_user_state, {username,userState}})
+        IO.inspect "-----------------------------Logging Out Client Request--------------------------------------------"
+        IO.puts userState
+        userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:update_user_state, {username,userState}})
         {:reply, true, userState}
     end
 
@@ -171,6 +179,8 @@ defmodule Client do
         userOfTweet = elem(new_message,0)
         tweetId = elem(new_message,1)
         fullTweet = GenServer.call(String.to_atom(userOfTweet), {:get_tweet_by_tweetId, {tweetId}})
+        IO.inspect "--------------------------RETWEET-------------------------------------"
+        IO.inspect fullTweet
         {tweet, userState} = upsert_retweet(userState, fullTweet)
         {:reply,{:tweet,tweet}, userState}
     end
@@ -207,10 +217,6 @@ defmodule Client do
     end
 
     def terminate(reason, state) do
-        #IO.puts "Going Down: #{inspect(state)}"
         :normal
       end
-
 end
-
-#{:news,size} = GenServer.call({:bit_coin,String.to_atom(server_name)},{:print_message,"Keyur"}, :infinity)    

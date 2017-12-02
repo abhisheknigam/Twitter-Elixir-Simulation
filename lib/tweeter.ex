@@ -2,12 +2,10 @@ defmodule Tweeter do
     use GenServer
 
     def main(args) do
-     
         inp = process_arguments(args)
         if(inp == "server") do
             start_server
         else
-            
             #start client 
             start_client
             #run_test_new
@@ -16,6 +14,7 @@ defmodule Tweeter do
         #run_tests
         IO.gets ""
     end
+
     def start_client do
 
         Node.start(String.to_atom("client@"<>get_ip_addr))
@@ -49,7 +48,6 @@ defmodule Tweeter do
         IO.puts "server starting"
         Node.start(String.to_atom("server@"<>get_ip_addr))
         Node.set_cookie :"choco"
-  
         GenServer.start_link(Server, {}, name: String.to_atom("mainserver"))
     end
 
@@ -65,6 +63,7 @@ defmodule Tweeter do
 
         :timer.sleep(2500)
         logout_user("keyur")
+        logout_user("abhi")
 
     end
     def run_tests do
@@ -102,7 +101,7 @@ defmodule Tweeter do
         
         IO.inspect get_hashtag_tweets("This")
 
-        post_retweet("abhi", "apurv", 0)
+        post_retweet("keyur", "abhi", 0)
 
 
         IO.inspect get_user_state("Karan")
@@ -118,12 +117,12 @@ defmodule Tweeter do
 
         login_user("keyur","baldha")
 
-        userlist = create_users(50, [])
-        register_and_login(userlist)
-        post_random_tweets(userlist,100)
-        map_set = MapSet.new
-        map_set = add_random_followers(userlist, 50, map_set)
-        logout_all_users(userlist)
+        #userlist = create_users(50, [])
+        #register_and_login(userlist)
+        #post_random_tweets(userlist,100)
+        #map_set = MapSet.new
+        #map_set = add_random_followers(userlist, 50, map_set)
+        #logout_all_users(userlist)
 
 
         IO.puts "------------------server state---------------------"
@@ -219,7 +218,7 @@ defmodule Tweeter do
     end
 
     def post_retweet(username, tweet_username, tweet_id) do
-        {:tweet,tweet} = GenServer.call(String.to_atom(username),{:retweet,{tweet_username,tweet_id}})
+        {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:retweet,{tweet_username,tweet_id}})
         IO.inspect tweet
           
     end
