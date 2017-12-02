@@ -42,17 +42,15 @@ defmodule Server do
         if(length(followings) == 0) do
             tweets
         else
-           
             [user | followings] = followings
             user_tweets = get_user_tweets(user,users) 
             merge_tweets(followings, Enum.concat(tweets,user_tweets), idx+1, users)
-
         end       
     end
 
     def build_dashboard(user,users) do
         followings = Map.get(user,"followings")   
-        self_tweets = Map.get(user,"tweets")           
+        self_tweets = Map.get(user,"tweets")    
         dashboard = merge_tweets(followings,self_tweets,0,users)
         dashboard = Enum.sort(dashboard,&(elem(&1,2) > elem(&2,2)))
         dashboard
@@ -175,6 +173,18 @@ defmodule Server do
         {:reply,userState,state}
     end
 
+    def handle_call({:update_state, userStateTuple}, _from, state) do
+        #dashboard = build_dashboard(user, Map.get(state,"users"))
+        users = Map.get(state,"users")
+        userState = elem(userStateTuple,0)
+        username = Map.get(userState,"username")
+
+        users = Map.put(users, username, userState)
+        state = Map.put(state, "users", users) 
+        
+        {:reply,userState,state}
+    end
+
     def handle_call({:get_login_state, username}, _from, state) do
         user = Map.get(Map.get(state,"users"),username)
         dashboard = build_dashboard(user, Map.get(state,"users"))
@@ -218,8 +228,6 @@ defmodule Server do
         IO.puts("add tagsss")
         hashtag = elem(hash_info,0)
         tweet = elem(hash_info,1)
-        #{hashtag, tweet}
-        #IO.puts "adddd   hash tags " <> hashtag 
         hashtag_map = Map.get(state,"hashtags")
         if(Map.get(hashtag_map,hashtag) == nil) do
             hashtag_map = Map.put(hashtag_map,hashtag,[])
@@ -232,7 +240,6 @@ defmodule Server do
     end
 
     def handle_call({:add_mentions , mentions_info}, _from, state) do
-        
         mentions = elem(mentions_info, 0)
         tweet = elem(mentions_info, 1)
         mentions_map = Map.get(state,"mentions")
