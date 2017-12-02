@@ -147,7 +147,7 @@ defmodule Client do
     def handle_cast({:go_offline ,new_message}, userState) do
         username = Map.get(userState,"username");
         #IO.inspect "-----------------------------Logging Out Client Request--------------------------------------------"
-        userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:update_user_state, {username,userState}})
+        userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:update_user_state, {username,userState}}, :infinity)
         Process.exit(self(),:normal)
         {:noreply, userState}
     end
@@ -221,7 +221,7 @@ defmodule Client do
             spawn fn -> GenServer.call({String.to_atom(follower),String.to_atom("client@"<>Tweeter.get_ip_addr)}, {:add_to_following_alive, {username}}) end
         #else
         end
-        GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:add_to_following_dead, {username, follower}}) 
+        spawn fn-> GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:add_to_following_dead, {username, follower}}) end
         #end
         {follower, userState} = upsert_user_follower(userState, follower)
         
