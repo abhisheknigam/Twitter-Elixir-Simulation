@@ -28,12 +28,12 @@ defmodule Server do
         
         tweets = []
         if(is_user_online(username) == true) do
-            IO.puts "getting tweets for ::" <> username
+            #IO.puts "getting tweets for ::" <> username
            {:tweets,tweets} = GenServer.call(String.to_atom(username), {:get_tweets,{:print_message,"Keyur"}}) 
         else 
             tweets = Map.get(Map.get(users, username),"tweets")
         end
-        IO.inspect tweets
+        #IO.inspect tweets
         tweets
     end
 
@@ -155,7 +155,7 @@ defmodule Server do
         #authenticate user
         if(is_user_online(username) == false && user != nil && Map.get(user,"password") == password) do
             retVal = true
-            IO.inspect "here"
+            #IO.inspect "here"
             dashboard = build_dashboard(user, Map.get(state,"users"))
             user = Map.put(user,"dashboard",dashboard)            
             GenServer.start_link(Client, user, name: String.to_atom(username))
@@ -192,8 +192,8 @@ defmodule Server do
             GenServer.stop(pid, :normal)
 
             pid = Process.whereis(String.to_atom(username)) 
-            IO.puts "PID"
-            IO.inspect  pid
+            #IO.puts "PID"
+            #IO.inspect  pid
         end
         {:reply,true,state}
     end

@@ -4,8 +4,8 @@ defmodule Client do
     def init(user_info) do
         IO.inspect user_info
         userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)},{:get_login_state,elem(user_info,0)})        
-        IO.puts "user state::"
-        IO.inspect userState
+        #IO.puts "user state::"
+        #IO.inspect userState
         {:ok,userState}
     end 
 
@@ -29,7 +29,7 @@ defmodule Client do
             if tweets != nil && length(tweets) > 0 do
                 [lastTweet|allOthers] = tweets
                 lastTweetId = elem(lastTweet,1)
-                IO.inspect lastTweetId
+                #IO.inspect lastTweetId
                 finalTweet = {tweet, lastTweetId+1, :calendar.universal_time(), username}
                 tweets = [finalTweet | tweets]
             else
@@ -58,7 +58,7 @@ defmodule Client do
         if tweets != nil && length(tweets) > 0 do
             [lastTweet|allOthers] = tweets
             lastTweetId = elem(lastTweet,1)
-            IO.inspect lastTweetId
+            #IO.inspect lastTweetId
             
             finalTweet = {tweet, lastTweetId+1, :calendar.universal_time(), username, fullTweet}
             tweets = [finalTweet | tweets]
@@ -93,7 +93,7 @@ defmodule Client do
         if userState != nil do
             followings = Map.get(userState, "followings")
             followings = [following | followings]
-            IO.inspect followings
+            #IO.inspect followings
             userState = Map.put(userState, "followings", followings)
         end
         {following, userState}
@@ -149,7 +149,7 @@ defmodule Client do
 
     def handle_call({:add_to_following_alive ,new_message}, _from, userState) do
         following = elem(new_message,0)
-        IO.inspect "Following" <> following
+        #IO.inspect "Following" <> following
         {following, userState} = upsert_user_following(userState, following)
         {:reply,following,userState}
     end
