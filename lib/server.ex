@@ -173,17 +173,7 @@ defmodule Server do
         {:reply,userState,state}
     end
 
-    def handle_call({:update_state, userStateTuple}, _from, state) do
-        #dashboard = build_dashboard(user, Map.get(state,"users"))
-        users = Map.get(state,"users")
-        userState = elem(userStateTuple,0)
-        username = Map.get(userState,"username")
-
-        users = Map.put(users, username, userState)
-        state = Map.put(state, "users", users) 
-        
-        {:reply,userState,state}
-    end
+    
 
     def handle_call({:get_login_state, username}, _from, state) do
         user = Map.get(Map.get(state,"users"),username)
