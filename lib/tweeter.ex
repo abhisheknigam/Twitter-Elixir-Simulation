@@ -321,8 +321,10 @@ defmodule Tweeter do
     end
 
     def post_retweet(username, tweet_username, tweet_id) do
-        {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:retweet,{tweet_username,tweet_id}})
-        #IO.inspect tweet
+        if(is_user_online(username) == true) do            
+            {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:retweet,{tweet_username,tweet_id}})
+        end
+            #IO.inspect tweet
           
     end
 
@@ -413,6 +415,7 @@ defmodule Tweeter do
             #IO.inspect random_username
             post_tweet(username,"test tweet::" <> username <> "_" <> Integer.to_string(num))
             add_follower(username,random_username)
+            post_retweet(username,random_username,1)
             #process_mentions(word, finalTweet)
         end
         )

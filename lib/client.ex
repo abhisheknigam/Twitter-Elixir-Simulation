@@ -59,6 +59,7 @@ defmodule Client do
     end
 
     def upsert_retweet(userState, fullTweet) do
+      if(fullTweet != nil) do
         username = Map.get(userState, "username")
         tweets = Map.get(userState, "tweets")
         tweet = elem(fullTweet,0)
@@ -85,7 +86,7 @@ defmodule Client do
        
         #Add tweet to user state
         userState = Map.put(userState, "tweets", tweets)
-        
+        end
         {finalTweet, userState}
     end
 
@@ -196,7 +197,11 @@ defmodule Client do
         fullTweet = GenServer.call(String.to_atom(userOfTweet), {:get_tweet_by_tweetId, {tweetId}})
         #IO.inspect "--------------------------RETWEET-------------------------------------"
         #IO.inspect fullTweet
-        {tweet, userState} = upsert_retweet(userState, fullTweet)
+        tweet = nil
+        if(fullTweet != nil) do
+            {tweet, userState} = upsert_retweet(userState, fullTweet)
+        end
+
         {:reply,{:tweet,tweet}, userState}
     end
 
