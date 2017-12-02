@@ -8,22 +8,26 @@ defmodule Tweeter do
 
         if(inp == "server") do
             start_server
+            IO.gets ""
+            IO.puts "------------------server state---------------------"
+            IO.inspect get_server_state
         else
             #start client 
             start_client
             #run_test_new
             #run_tests
             #IO.inspect getZipfDist(50)
-            run_zipf_test(numberofClients)
+            run_zipf_test(numberofClients)            
+            IO.puts "------------------server state---------------------"
+            IO.inspect get_server_state
+            
         end
         #run_tests
         
-        IO.gets ""
-        IO.puts "------------------server state---------------------"
-        IO.inspect get_server_state
+       
 
-        IO.puts "------------------user state---------------------"
-        Enum.map(1..numberofClients,fn(x)-> IO.inspect get_user_state("node_"<>Integer.to_string(x)) end)
+        #IO.puts "------------------user state---------------------"
+        #Enum.map(1..numberofClients,fn(x)-> IO.inspect get_user_state("node_"<>Integer.to_string(x)) end)
         #IO.inspect get_user_state("keyur")
         
        
@@ -81,6 +85,31 @@ defmodule Tweeter do
         GenServer.start_link(Server, {}, name: String.to_atom("mainserver"))
     end
 
+    def should_terminate(userList) do
+        count = get_online_user_count(0,userList)
+        #IO.inspect userList
+        if(count == 0) do
+            true
+        else
+            :timer.sleep(100)
+            should_terminate(userList)
+        end        
+    end
+
+    def get_online_user_count(count,userList) do
+        
+        if(length(userList) == 0 || count > 0) do
+            count
+        else         
+            [username|userList] = userList
+            if(is_user_online(elem(username,0)) == true) do
+                count = count + 1
+            end
+            get_online_user_count(count,userList)
+        end
+
+    end
+    
     def run_test_new do
         IO.inspect "register user"
         register_user("keyur","baldha")
@@ -103,6 +132,7 @@ defmodule Tweeter do
     def run_zipf_test(count) do
         
         userlist = create_users(count, [])
+        IO.inspect userlist
         zipfDistList = getZipfDist(count)
         register_and_login(userlist)
         #:timer.sleep(5000)
@@ -110,8 +140,12 @@ defmodule Tweeter do
                 spawn_link fn -> simulate_user(elem(tuple,0),count,elem(tuple,1)) end
             end
         )
-
+        
+        if(should_terminate(userlist) == true) do
+            true
+        end
     end
+
     def run_tests do
         
         register_user("keyur","baldha")
