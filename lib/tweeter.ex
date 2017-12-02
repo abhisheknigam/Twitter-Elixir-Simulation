@@ -279,7 +279,7 @@ defmodule Tweeter do
         Enum.each(userlist, 
             fn(user) -> 
                 register_user(elem(user,0), elem(user,1))   
-                :timer.sleep(100)             
+                #:timer.sleep(100)             
                 login_user(elem(user,0), elem(user,1))
             end
         )
