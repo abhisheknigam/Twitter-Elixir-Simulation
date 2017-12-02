@@ -116,7 +116,7 @@ defmodule Tweeter do
         register_user("abhi","shek")
 
         login_user("keyur","baldha")
-        login_user("abhi","shek")
+        login_user("abhi","sheki")
         post_tweet("keyur","helooo")
         add_follower("abhi","keyur")
 
@@ -347,6 +347,8 @@ defmodule Tweeter do
         info = {username,password}
         #IO.puts "login " <> username
         GenServer.start_link(Client, info, name: String.to_atom(username))
+        GenServer.cast({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)}, {:login,{username,password}})
+
         # if(retVal == true) do 
         #     IO.inspect "" <> username <>" login successful"
         #     IO.inspect get_user_state(username)
