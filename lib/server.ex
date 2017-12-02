@@ -49,6 +49,9 @@ defmodule Server do
     end
 
     def build_dashboard(user,users) do
+        IO.puts "----login state----------"
+        IO.inspect Map.get(user,"followings")   
+        
         followings = Map.get(user,"followings")   
         self_tweets = Map.get(user,"tweets")    
         dashboard = merge_tweets(followings,self_tweets,0,users)
@@ -107,7 +110,8 @@ defmodule Server do
         users = Map.get(state, "users")
         userState = elem(user,1)
         username = elem(user,0)
-        users = Map.put(users,username,user)
+        
+        users = Map.put(users,username,userState)
         state = Map.put(state,"users",users)
         
         {:reply,state,state}
@@ -177,6 +181,8 @@ defmodule Server do
 
     def handle_call({:get_login_state, username}, _from, state) do
         user = Map.get(Map.get(state,"users"),username)
+        #IO.puts "----login state----------"
+        IO.inspect user
         dashboard = build_dashboard(user, Map.get(state,"users"))
         user = Map.put(user,"dashboard",dashboard) 
         {:reply,user,state}
