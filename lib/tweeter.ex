@@ -9,7 +9,9 @@ defmodule Tweeter do
             #start client 
             start_client
             #run_test_new
-            run_tests
+            #run_tests
+            #IO.inspect getZipfDist(50)
+            run_zipf_test(50)
         end
         #run_tests
         IO.gets ""
@@ -29,6 +31,22 @@ defmodule Tweeter do
         #     IO.inspect "" <> username <>" registration unsuccessful"
         # end   
 
+    end
+
+    
+
+    def getZipfDist(numberofClients) do
+        distList=[]
+        s=1
+        c=getConstantValue(numberofClients,s)
+        distList=Enum.map(1..numberofClients,fn(x)->{"node_"<>Integer.to_string(x),:math.ceil((c*numberofClients)/:math.pow(x,s))} end)
+        distList
+    end
+        
+    def getConstantValue(numberofClients,s) do
+        k=Enum.reduce(1..numberofClients,0,fn(x,acc)->:math.pow(1/x,s)+acc end )
+        k=1/k
+        k
     end
 
     def process_arguments(arguments) do
@@ -64,6 +82,21 @@ defmodule Tweeter do
         :timer.sleep(2500)
         logout_user("keyur")
         logout_user("abhi")
+
+    end
+
+    
+    
+    
+    def run_zipf_test(count) do
+        userlist = create_users(count, [])
+        zipfDistList = getZipfDist(count)
+        register_and_login(userlist)
+        #:timer.sleep(5000)
+        Enum.each(zipfDistList, fn(tuple) -> 
+                spawn_link fn -> simulate_user(elem(tuple,0),count,elem(tuple,1)) end
+            end
+        )
 
     end
     def run_tests do
@@ -197,11 +230,20 @@ defmodule Tweeter do
         )
     end
 
+    def get_random_user(username,total_clients) do
+        num = :rand.uniform(total_clients)
+        new_user = "node_"<> Integer.to_string(num)
+        if(username != new_user) do
+            new_user
+        else
+            get_random_user(username,total_clients)
+        end 
+    end
     def create_users(number,userlist) do
         if(number == 0) do
             userlist
         else
-            user = {"user_" <> Integer.to_string(number),"pwd"}
+            user = {"node_" <> Integer.to_string(number),"pwd"}
             userlist = [user | userlist]
             create_users(number-1,userlist)
         end
@@ -213,7 +255,11 @@ defmodule Tweeter do
 
     def post_tweet(username, tweet_text) do
         #tweet = GenServer.call(String.to_atom("mainserver"), {:post_tweet,{username,tweet_text}}) 
+        IO.inspect "post tweet of "<> username
         {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:add_tweet,{tweet_text}})
+        
+        #{:tweet,tweet} = GenServer.call(String.to_atom(username),{:add_tweet,{tweet_text}})
+        
         IO.inspect tweet
     end
 
@@ -242,12 +288,13 @@ defmodule Tweeter do
         
         GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:logout,{username}}) 
         retVal = true
-        IO.inspect "" <> username <>" logout successful"
+        IO.inspect "" <> username <> " logout successful"
     end
 
     def login_user(username,password)  do
         #retVal = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)}, {:login,{username,password}}) 
         info = {username,password}
+        IO.puts "login " <> username
         GenServer.start_link(Client, info, name: String.to_atom(username))
         # if(retVal == true) do 
         #     IO.inspect "" <> username <>" login successful"
@@ -279,4 +326,32 @@ defmodule Tweeter do
     def add_follower(username, follower) do
         user = GenServer.call(String.to_atom(username),{:add_follower, {follower}})         
     end
+
+    def is_user_online(username) do
+        is_online = false
+       # IO.puts username
+        pid = Process.whereis(String.to_atom(username))   
+       # IO.inspect username <> " is  :: "
+       # IO.inspect pid   
+        if(pid != nil && Process.alive?(pid) == true) do
+            is_online = true
+        end
+        is_online
+    end
+
+    def simulate_user(username,client_count,weight) do
+        weight  = round(weight)
+        lst = Enum.concat([1..weight])
+        IO.puts "simulating " <> username
+        Enum.each(lst, fn(num) -> 
+            #IO.inspect num
+            random_username = get_random_user(username,client_count)
+            #IO.inspect random_username
+            post_tweet(username,"test tweet::" <> username <> Integer.to_string(num))
+            add_follower(username,random_username)
+            #process_mentions(word, finalTweet)
+        end
+        )
+    end
+
 end
