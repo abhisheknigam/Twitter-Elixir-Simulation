@@ -10,18 +10,15 @@ defmodule Client do
     end 
 
     def log_in(user_info) do 
-        username = elem(user_info,0)
-        password = elem(user_info,1)
-        isValid = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)},{:authenticate_user,{username,password}})
-        isValid
-        #GenServer.start_link(__MODULE__, user_info, name: String.to_atom(username))      
+        username = elem(user_info,0)                  
+        GenServer.start_link(__MODULE__, user_info, name: String.to_atom(username))      
     end
 
     def add_to_follower_dashboards(finalTweet, followings) do
         if length(followings) > 0 do
             [following | followings] = followings
             #IO.inspect "Dashboard followers" <> following
-            spawn fn-> GenServer.call({String.to_atom(following),String.to_atom("client@"<>Tweeter.get_ip_addr)}, {:add_to_dashboard, {finalTweet}}) end
+            GenServer.call(String.to_atom(following), {:add_to_dashboard, {finalTweet}})
             add_to_follower_dashboards(finalTweet, followings) 
         end
     end
@@ -146,10 +143,17 @@ defmodule Client do
 
     def handle_cast({:go_offline ,new_message}, userState) do
         username = Map.get(userState,"username");
-        IO.inspect "-----------------------------Logging Out Client Request--------------------------------------------"
+<<<<<<< HEAD
+        IO.inspect "-------------------------------------------------------------------------"
         userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:update_user_state, {username,userState}})
         Process.exit(self(),:normal)
         {:noreply, userState}
+=======
+        IO.inspect "-----------------------------Logging Out Client Request--------------------------------------------"
+        IO.puts userState
+        userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:update_user_state, {username,userState}})
+        {:reply, true, userState}
+>>>>>>> aca76f98fa15a6eb2c6a53d6747cdd93f80c468c
     end
 
     def handle_call({:add_tweet ,new_message}, _from, userState) do
@@ -176,18 +180,6 @@ defmodule Client do
             tweets = Map.get(userState, "tweets")
         end
         {:reply,{:tweets,tweets}, userState}
-    end
-
-    def handle_cast({:login ,new_message}, userState) do
-        if userState != nil do
-            isValid = log_in(new_message)
-        end
-        IO.inspect "----------------------is Valid Authentication---------------------"
-        IO.inspect isValid
-        if isValid == false do
-            Process.exit(self(),:normal)
-        end
-        {:noreply, userState}
     end
 
     def handle_call({:retweet ,new_message}, _from, userState) do
@@ -218,11 +210,10 @@ defmodule Client do
         pid = Process.whereis(String.to_atom(follower))
 
         if(pid != nil && Process.alive?(pid) == true) do   
-            spawn fn -> GenServer.call({String.to_atom(follower),String.to_atom("client@"<>Tweeter.get_ip_addr)}, {:add_to_following_alive, {username}}) end
-        #else
+            GenServer.call(String.to_atom(follower), {:add_to_following_alive, {username}}) 
+        else
+            GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:add_to_following_dead, {username, follower}}) 
         end
-        GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:add_to_following_dead, {username, follower}}) 
-        #end
         {follower, userState} = upsert_user_follower(userState, follower)
         
         {:reply, userState, userState}

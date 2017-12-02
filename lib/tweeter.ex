@@ -343,8 +343,8 @@ defmodule Tweeter do
     end
 
     def add_follower(username, follower) do
-        if(is_user_online(username) == True) do
-            user = GenServer.call(String.to_atom(username),{:add_follower, {follower}})   
+        if(is_user_online(username) == true) do
+            user = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:add_follower, {follower}})   
         end      
     end
 
