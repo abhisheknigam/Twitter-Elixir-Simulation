@@ -102,6 +102,7 @@ defmodule Tweeter do
     
     
     def run_zipf_test(count) do
+        
         userlist = create_users(count, [])
         zipfDistList = getZipfDist(count)
         register_and_login(userlist)
