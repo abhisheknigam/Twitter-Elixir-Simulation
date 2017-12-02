@@ -3,7 +3,7 @@ defmodule Tweeter do
 
     def main(args) do
         inp = process_arguments(args)
-        numberofClients = 20
+        numberofClients = 100
 
 
         if(inp == "server") do
@@ -12,6 +12,10 @@ defmodule Tweeter do
             IO.puts "------------------server state---------------------"
             IO.inspect get_server_state
         else
+            numberofClients = String.to_integer(inp)
+            if(numberofClients == nil) do
+                numberofClients = 100
+            end
             #start client 
             start_client
             #run_test_new
@@ -136,7 +140,7 @@ defmodule Tweeter do
     def run_zipf_test(count) do
         
         userlist = create_users(count, [])
-        IO.inspect userlist
+        #IO.inspect userlist
         zipfDistList = getZipfDist(count)
         register_and_login(userlist)
         #:timer.sleep(5000)
