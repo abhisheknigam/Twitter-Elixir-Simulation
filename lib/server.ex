@@ -70,13 +70,14 @@ defmodule Server do
 
     def is_user_online(username) do
         is_online = false
-       # IO.puts username
+        IO.puts "is online? " <> username
         pid = Process.whereis(String.to_atom(username))   
        # IO.inspect username <> " is  :: "
        # IO.inspect pid   
         if(pid != nil && Process.alive?(pid) == true) do
             is_online = true
         end
+        IO.puts is_online
         is_online
     end
 
@@ -106,7 +107,9 @@ defmodule Server do
     #dump user state on server
     def handle_call({:update_user_state ,user},_from,state) do       
         users = Map.get(state, "users")
-        users = Map.put(users,Map.get(elem(user,1),"username"),elem(user,1))
+        userState = elem(user,1)
+        username = elem(user,0)
+        users = Map.put(users,username,user)
         state = Map.put(state,"users",users)
         
         {:reply,state,state}
@@ -181,20 +184,21 @@ defmodule Server do
 
     def handle_call({:logout,username},_from, state) do
         username = elem(username,0)
-        if(is_user_online(username) == true) do
-            userState = GenServer.call(String.to_atom(username),{:get_user_state, username})
+        #if(is_user_online(username) == true) do
+            IO.puts "logginnnng out"
+            userState = GenServer.call({String.to_atom(username),String.to_atom("client@"<>Tweeter.get_ip_addr)},{:get_user_state, username})
             users = Map.get(state,"users")
             users = Map.put(users, username, userState)
             state = Map.put(state, "users", users)
             #retVal = GenServer.call(String.to_atom(username),{:go_offline, {:print_message,"Keyur"}}) 
             
-            pid = Process.whereis(String.to_atom(username)) 
-            GenServer.stop(pid, :normal)
+            # pid = Process.whereis(String.to_atom(username)) 
+            #GenServer.stop(pid, :normal)
 
-            pid = Process.whereis(String.to_atom(username)) 
-            #IO.puts "PID"
+            #pid = Process.whereis(String.to_atom(username)) 
+            IO.puts "PID"
             #IO.inspect  pid
-        end
+        #end
         {:reply,true,state}
     end
 

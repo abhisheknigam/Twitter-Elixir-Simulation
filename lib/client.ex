@@ -134,11 +134,12 @@ defmodule Client do
         {:reply, {:ok}, userState}
     end
 
-    def handle_call({:go_offline ,new_message},_from, userState) do
+    def handle_cast({:go_offline ,new_message}, userState) do
         username = Map.get(userState,"username");
         IO.inspect "-------------------------------------------------------------------------"
-        userState = GenServer.call(String.to_atom("mainserver"), {:update_user_state, {username,userState}})
-        {:reply, true, userState}
+        userState = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:update_user_state, {username,userState}})
+        Process.exit(self(),:normal)
+        {:noreply, userState}
     end
 
     def handle_call({:add_tweet ,new_message}, _from, userState) do

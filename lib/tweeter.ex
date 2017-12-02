@@ -4,7 +4,9 @@ defmodule Tweeter do
     def main(args) do
      
         inp = process_arguments(args)
-        numberofClients = 50
+        numberofClients = 20
+
+
         if(inp == "server") do
             start_server
         else
@@ -299,8 +301,10 @@ defmodule Tweeter do
     
     def logout_user(username)  do
         
-        GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:logout,{username}}) 
-        retVal = true
+        GenServer.cast({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:go_offline,{"log out"}})
+        
+        #GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>get_ip_addr)},{:logout,{username}}) 
+        #retVal = true
         IO.inspect "" <> username <> " logout successful"
     end
 
@@ -355,6 +359,7 @@ defmodule Tweeter do
     end
 
     def simulate_user(username,client_count,weight) do
+        tweet_factor = 2
         weight  = round(weight)
         lst = Enum.concat([1..weight])
         #IO.puts "simulating " <> username
@@ -367,6 +372,14 @@ defmodule Tweeter do
             #process_mentions(word, finalTweet)
         end
         )
+        
+        tweet_factor = tweet_factor - 1
+        lst = Enum.concat([1..tweet_factor*weight])
+        Enum.each(lst, fn(num) ->            
+            post_tweet(username,"test tweet::" <> username <> Integer.to_string(num))           
+        end
+        )
+
         logout_user(username)
     end
 
