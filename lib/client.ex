@@ -18,7 +18,7 @@ defmodule Client do
         if length(followings) > 0 do
             [following | followings] = followings
             #IO.inspect "Dashboard followers" <> following
-            GenServer.call(String.to_atom(following), {:add_to_dashboard, {finalTweet}})
+            spawn fn-> GenServer.call({String.to_atom(following),String.to_atom("client@"<>Tweeter.get_ip_addr)}, {:add_to_dashboard, {finalTweet}}) end
             add_to_follower_dashboards(finalTweet, followings) 
         end
     end
@@ -203,10 +203,11 @@ defmodule Client do
         pid = Process.whereis(String.to_atom(follower))
 
         if(pid != nil && Process.alive?(pid) == true) do   
-            GenServer.call(String.to_atom(follower), {:add_to_following_alive, {username}}) 
-        else
-            GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:add_to_following_dead, {username, follower}}) 
+            spawn fn -> GenServer.call({String.to_atom(follower),String.to_atom("client@"<>Tweeter.get_ip_addr)}, {:add_to_following_alive, {username}}) end
+        #else
         end
+        GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:add_to_following_dead, {username, follower}}) 
+        #end
         {follower, userState} = upsert_user_follower(userState, follower)
         
         {:reply, userState, userState}

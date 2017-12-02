@@ -109,8 +109,7 @@ defmodule Server do
     def handle_call({:update_user_state ,user},_from,state) do       
         users = Map.get(state, "users")
         userState = elem(user,1)
-        username = elem(user,0)
-        
+        username = elem(user,0)        
         users = Map.put(users,username,userState)
         state = Map.put(state,"users",users)
         
