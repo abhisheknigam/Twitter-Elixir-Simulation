@@ -112,8 +112,8 @@ defmodule Server do
         username = elem(user,0)        
         users = Map.put(users,username,userState)
         state = Map.put(state,"users",users)
-        
-        {:reply,state,state}
+        IO.puts "updating state on server " <> username
+        {:reply,true,state}
     end
 
     #get user state
@@ -159,7 +159,7 @@ defmodule Server do
     
     def handle_call({:get_tweet_by_tweetId_alive ,new_message}, _from, state) do
         tweetId = elem(new_message, 0)
-        userOfTweet = elem(new_message, 1)
+        username = elem(new_message, 1)
         
         user = Map.get(Map.get(state,"users"),username)
         tweets = Map.get(user, "tweets");

@@ -310,9 +310,9 @@ defmodule Tweeter do
 
     def post_tweet(username, tweet_text) do
         #tweet = GenServer.call(String.to_atom("mainserver"), {:post_tweet,{username,tweet_text}}) 
-        #IO.inspect "post tweet of "<> username
+        
         if(is_user_online(username) == true) do
-            
+            IO.inspect "post tweet of "<> username
             {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:add_tweet,{tweet_text}})
         end
         #{:tweet,tweet} = GenServer.call(String.to_atom(username),{:add_tweet,{tweet_text}})
@@ -321,8 +321,13 @@ defmodule Tweeter do
     end
 
     def post_retweet(username, tweet_username, tweet_id) do
-        if(is_user_online(username) == true) do            
-            {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:retweet,{tweet_username,tweet_id}})
+
+        if(is_user_online(username) == true) do    
+            IO.puts "retweet by user " <> username
+            tweet = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:get_tweet_to_retweet,"tweet"})
+            if(tweet != nil) do     
+                {:tweet,tweet} = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:retweet,{tweet_username,tweet}})
+            end
         end
             #IO.inspect tweet
           
@@ -388,6 +393,7 @@ defmodule Tweeter do
 
     def add_follower(username, follower) do
         if(is_user_online(username) == true) do
+            IO.inspect "add follower of "<> username
             user = GenServer.call({String.to_atom(username),String.to_atom("client@"<>get_ip_addr)},{:add_follower, {follower}})   
         end      
     end
@@ -405,7 +411,7 @@ defmodule Tweeter do
     end
 
     def simulate_user(username,client_count,weight) do
-        tweet_factor = 2
+        tweet_factor = 60
         weight  = round(weight)
         lst = Enum.concat([1..weight])
         #IO.puts "simulating " <> username
