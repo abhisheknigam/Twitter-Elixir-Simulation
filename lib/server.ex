@@ -277,12 +277,8 @@ defmodule Server do
 
     def handle_call({:get_hash_list , hashtag}, _from, state) do
         hashtag = elem(hashtag, 0)
-
         hashtags = Map.get(state,"hashtags")
-
-        
         tweets = Map.get(hashtags,hashtag)
-        #IO.puts"------------------------herereererer------------"
         if(tweets == nil) do
             tweets = []
         end
