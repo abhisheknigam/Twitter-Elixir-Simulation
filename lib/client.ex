@@ -116,6 +116,19 @@ defmodule Client do
         userState
     end
 
+    def get_other_user_tweet(dashboard,username) do
+        if(length(dashboard)) do
+            nil        
+        else
+            [tweet|dashboard] = dashboard
+            if(username != elem(tweet,3)) do
+                tweet
+            else
+                get_other_user_tweet(dashboard,username)
+            end 
+        end
+    end
+
     def process_hashtags(word, tweet) do
         if String.first(word)=="#" do           
             hashtag =  String.slice(word,1,String.length(word))
@@ -191,18 +204,32 @@ defmodule Client do
         {:noreply, userState}
     end
 
+    def handle_call({:get_tweet_to_retweet, message},_from,userState) do
+        dashboard = Map.get(userState,"dashboard")
+        username = Map.get(userState,"username")
+        tweet = get_other_user_tweet(dashboard,username)
+        {:reply, tweet, userState}
+    end
     def handle_call({:retweet ,new_message}, _from, userState) do
         userOfTweet = elem(new_message,0)
-        tweetId = elem(new_message,1)
-        pid = Process.whereis(String.to_atom(userOfTweet))
-        
-        if(pid != nil && Process.alive?(pid) == true) do   
-            fullTweet = GenServer.call(String.to_atom(userOfTweet), {:get_tweet_by_tweetId, {tweetId}})
-        else
-            fullTweet = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:get_tweet_by_tweetId_alive, {tweetId,userOfTweet}})            
-        end
-                
-        tweet = nil
+        fullTweet = elem(new_message,1)
+
+        # pid = Process.whereis(String.to_atom(userOfTweet))
+
+        # fullTweet = nil
+        # if(pid != nil && Process.alive?(pid) == true) do  
+        #     try do 
+        #         fullTweet = GenServer.call({String.to_atom(userOfTweet),String.to_atom("client@"<>Tweeter.get_ip_addr)}, {:get_tweet_by_tweetId, {tweetId}})
+        #     #rescue
+        #      #   e in RuntimeError -> IO.puts("Error: " <> e.message)
+        #     catch 
+        #         :exit, _ -> "exit blocked"
+        #     end
+        # else
+        #     fullTweet = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:get_tweet_by_tweetId_alive, {tweetId, userOfTweet}})            
+        # end
+                   
+        # tweet = nil
         if(fullTweet != nil) do
             {tweet, userState} = upsert_retweet(userState, fullTweet)
         end
