@@ -157,6 +157,20 @@ defmodule Server do
         {:reply,tweet,state}
     end
     
+    def handle_call({:get_tweet_by_tweetId_alive ,new_message}, _from, state) do
+        tweetId = elem(new_message, 0)
+        userOfTweet = elem(new_message, 1)
+        
+        user = Map.get(Map.get(state,"users"),username)
+        tweets = Map.get(user, "tweets");
+
+        if length(tweets) >= tweetId do
+            tweet = Enum.at(tweets, tweetId)
+        else
+            tweet = nil
+        end
+        {:reply, tweet, state}
+    end
 
     #user_info - > 0 : username, 1: pwd
     def handle_call({:login,user_info}, _from, state) do

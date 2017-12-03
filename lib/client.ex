@@ -194,9 +194,14 @@ defmodule Client do
     def handle_call({:retweet ,new_message}, _from, userState) do
         userOfTweet = elem(new_message,0)
         tweetId = elem(new_message,1)
-        fullTweet = GenServer.call(String.to_atom(userOfTweet), {:get_tweet_by_tweetId, {tweetId}})
-        #IO.inspect "--------------------------RETWEET-------------------------------------"
-        #IO.inspect fullTweet
+        pid = Process.whereis(String.to_atom(userOfTweet))
+        
+        if(pid != nil && Process.alive?(pid) == true) do   
+            fullTweet = GenServer.call(String.to_atom(userOfTweet), {:get_tweet_by_tweetId, {tweetId}})
+        else
+            fullTweet = GenServer.call({String.to_atom("mainserver"),String.to_atom("server@"<>Tweeter.get_ip_addr)}, {:get_tweet_by_tweetId_alive, {tweetId,userOfTweet}})            
+        end
+                
         tweet = nil
         if(fullTweet != nil) do
             {tweet, userState} = upsert_retweet(userState, fullTweet)
@@ -211,7 +216,7 @@ defmodule Client do
         if length(tweets) >= tweetId do
             tweet = Enum.at(tweets, tweetId)
         else
-            tweet = Enum.at(tweets, 0)
+            tweet = nil
         end
         {:reply, tweet, userState}
     end
