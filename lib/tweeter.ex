@@ -134,21 +134,14 @@ defmodule Tweeter do
 
     end
 
-    
-    
-    
     def run_zipf_test(count) do
-        
         userlist = create_users(count, [])
-        #IO.inspect userlist
         zipfDistList = getZipfDist(count)
         register_and_login(userlist)
-        #:timer.sleep(5000)
         Enum.each(zipfDistList, fn(tuple) -> 
                 spawn_link fn -> simulate_user(elem(tuple,0),count,elem(tuple,1)) end
             end
         )
-        
         if(should_terminate(userlist) == true) do
             true
         end
@@ -294,6 +287,7 @@ defmodule Tweeter do
             get_random_user(username,total_clients)
         end 
     end
+
     def create_users(number,userlist) do
         if(number == 0) do
             userlist
@@ -414,25 +408,19 @@ defmodule Tweeter do
         tweet_factor = 60
         weight  = round(weight)
         lst = Enum.concat([1..weight])
-        #IO.puts "simulating " <> username
         Enum.each(lst, fn(num) -> 
-            #IO.inspect num
             random_username = get_random_user(username,client_count)
-            #IO.inspect random_username
             post_tweet(username,"test tweet::" <> username <> "_" <> Integer.to_string(num))
             add_follower(username,random_username)
             post_retweet(username,random_username,1)
-            #process_mentions(word, finalTweet)
         end
         )
-        
         tweet_factor = tweet_factor - 1
         lst = Enum.concat([1..tweet_factor*weight])
         Enum.each(lst, fn(num) ->            
             post_tweet(username,"test tweet::" <> username <> Integer.to_string(num))           
         end
         )
-
         logout_user(username)
     end
 
